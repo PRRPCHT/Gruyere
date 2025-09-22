@@ -39,7 +39,7 @@
 						<th>Name</th>
 						<th>URL</th>
 						<th>Is Reference</th>
-						<th>Is Active</th>
+						<th>Status</th>
 						<th>Actions</th>
 					</tr>
 				</thead>
@@ -47,7 +47,13 @@
 					{#each piHoleInstances as piHoleInstance}
 						<tr>
 							<td>{piHoleInstance.name}</td>
-							<td>{piHoleInstance.url}</td>
+							<td
+								><a
+									href={piHoleInstance.url + '/admin'}
+									target="_blank"
+									class="link no-underline hover:underline">{piHoleInstance.url}</a
+								></td
+							>
 							<td
 								>{#if piHoleInstance.isReference}<div class="badge badge-soft badge-success">
 										Reference
