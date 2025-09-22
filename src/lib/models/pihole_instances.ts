@@ -1,4 +1,5 @@
-import { type PiHoleInstance } from '$lib/types/types';
+import { authenticate } from '$lib/clients/pihole_client';
+import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
 
 const fs = await import('fs/promises');
 const path = await import('path');
@@ -37,6 +38,39 @@ export async function deletePiHoleInstance(id: number): Promise<PiHoleInstance[]
 		return newInstances;
 	} catch (error) {
 		console.error('Error deleting instance:', error);
+		return [];
+	}
+}
+
+export async function editPiHoleInstance(
+	id: number,
+	name: string,
+	url: string,
+	apiKey: string,
+	isReference: boolean
+): Promise<PiHoleInstance[]> {
+	try {
+		const instances = await getPiHoleInstances();
+		const preInstance = instances.find((instance) => instance.id === id);
+		if (!preInstance) {
+			throw new Error('Instance not found');
+		}
+		let newInstances: PiHoleInstance[] = instances.map((instance) =>
+			instance.id === id ? { ...instance, name, url, apiKey, isReference } : instance
+		);
+		if (preInstance.url !== url || preInstance.apiKey !== apiKey) {
+			preInstance.url = url;
+			preInstance.apiKey = apiKey;
+			await authenticate(preInstance);
+			newInstances = newInstances.map((instance) =>
+				instance.id === id ? { ...instance, status: preInstance.status } : instance
+			);
+		}
+		console.log(preInstance);
+		await savePiHoleInstances(newInstances);
+		return newInstances;
+	} catch (error) {
+		console.error('Error editing instance:', error);
 		return [];
 	}
 }

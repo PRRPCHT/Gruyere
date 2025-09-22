@@ -1,6 +1,7 @@
 import { authenticate } from '$lib/clients/pihole_client';
 import {
 	deletePiHoleInstance,
+	editPiHoleInstance,
 	getNextId,
 	getPiHoleInstances,
 	savePiHoleInstances
@@ -67,6 +68,22 @@ export const actions: Actions = {
 		);
 		if (theForm.isError) {
 			return fail(400, theForm);
+		}
+		try {
+			const newInstances = await editPiHoleInstance(
+				parseInt(theForm.id),
+				theForm.name,
+				theForm.url,
+				theForm.apiKey,
+				theForm.isReference
+			);
+			return {
+				success: true,
+				instances: newInstances
+			};
+		} catch (error) {
+			console.error('Error deleting Pi-hole instance:', error);
+			return fail(500, theForm);
 		}
 	},
 	deletePiHoleInstance: async ({ request }) => {
