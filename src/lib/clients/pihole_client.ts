@@ -14,14 +14,14 @@ export async function authenticate(instance: PiHoleInstance) {
 		if (response.status === 401 || response.status === 403) {
 			instance.status = PiHoleInstanceStatus.UNAUTHORIZED;
 		}
-		console.log(response);
 		const data = await response.json();
 		if (data.session) {
 			instance.sid = data.session.sid;
 			instance.csrf = data.session.csrf;
 			instance.status = PiHoleInstanceStatus.ACTIVE;
+		} else {
+			instance.status = PiHoleInstanceStatus.UNREACHABLE;
 		}
-		instance.status = PiHoleInstanceStatus.UNREACHABLE;
 	} catch (error) {
 		console.error(error);
 		instance.status = PiHoleInstanceStatus.UNREACHABLE;
