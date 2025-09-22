@@ -28,3 +28,15 @@ export async function savePiHoleInstances(instances: PiHoleInstance[]): Promise<
 export function getNextId(instances: PiHoleInstance[]): number {
 	return instances.reduce((max, instance) => Math.max(max, instance.id), 0) + 1;
 }
+
+export async function deletePiHoleInstance(id: number): Promise<PiHoleInstance[]> {
+	try {
+		const instances = await getPiHoleInstances();
+		const newInstances = instances.filter((instance) => instance.id !== id);
+		await savePiHoleInstances(newInstances);
+		return newInstances;
+	} catch (error) {
+		console.error('Error deleting instance:', error);
+		return [];
+	}
+}

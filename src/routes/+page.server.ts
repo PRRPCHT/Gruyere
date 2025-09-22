@@ -1,5 +1,10 @@
 import { authenticate } from '$lib/clients/pihole_client';
-import { getNextId, getPiHoleInstances, savePiHoleInstances } from '$lib/models/pihole_instances';
+import {
+	deletePiHoleInstance,
+	getNextId,
+	getPiHoleInstances,
+	savePiHoleInstances
+} from '$lib/models/pihole_instances';
 import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
 import type { Actions } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
@@ -21,7 +26,9 @@ export const load = async ({ locals }: { locals: any }) => {
 //bamcRAdfwFqecE0HjDLgLqfGon5Y6TykFIIEvrN3mf0=
 export const actions: Actions = {
 	addPiHoleInstance: async ({ request }) => {
-		let theForm: Record<string, any> = extractAndValidate(await request.formData());
+		let theForm: Record<string, any> = addPiHoleInstanceExtractAndValidate(
+			await request.formData()
+		);
 		if (theForm.isError) {
 			return fail(400, theForm);
 		}
@@ -53,6 +60,32 @@ export const actions: Actions = {
 			console.error('Error adding PiHole instance:', error);
 			return fail(500, theForm);
 		}
+	},
+	editPiHoleInstance: async ({ request }) => {
+		let theForm: Record<string, any> = editPiHoleInstanceExtractAndValidate(
+			await request.formData()
+		);
+		if (theForm.isError) {
+			return fail(400, theForm);
+		}
+	},
+	deletePiHoleInstance: async ({ request }) => {
+		let theForm: Record<string, any> = deletePiHoleInstanceExtractAndValidate(
+			await request.formData()
+		);
+		if (theForm.isError) {
+			return fail(400, theForm);
+		}
+		try {
+			const newInstances = await deletePiHoleInstance(parseInt(theForm.id));
+			return {
+				success: true,
+				instances: newInstances
+			};
+		} catch (error) {
+			console.error('Error deleting Pi-hole instance:', error);
+			return fail(500, theForm);
+		}
 	}
 } satisfies Actions;
 
@@ -63,7 +96,7 @@ function clean(element: string | null | undefined): string | null | undefined {
 	return element.trim();
 }
 
-function extractAndValidate(formData: FormData): Record<string, any> {
+function addPiHoleInstanceExtractAndValidate(formData: FormData): Record<string, any> {
 	const name = clean(formData.get('name') as string);
 	const url = clean(formData.get('url') as string);
 	const apiKey = clean(formData.get('apiKey') as string);
@@ -80,5 +113,42 @@ function extractAndValidate(formData: FormData): Record<string, any> {
 
 	theForm.isError = theForm.missingName || theForm.missingUrl || theForm.missingApiKey;
 
+	return theForm;
+}
+
+function editPiHoleInstanceExtractAndValidate(formData: FormData): Record<string, any> {
+	const id = clean(formData.get('id') as string);
+	const name = clean(formData.get('name') as string);
+	const url = clean(formData.get('url') as string);
+	const apiKey = clean(formData.get('apiKey') as string);
+	const isReference = formData.get('isReference') === 'true';
+
+	let theForm: Record<string, any> = {
+		id,
+		name,
+		url,
+		apiKey,
+		isReference
+	};
+	theForm.missingName = !theForm.name;
+	theForm.missingId = !theForm.id;
+	theForm.missingUrl = !theForm.url;
+	theForm.missingApiKey = !theForm.apiKey;
+
+	theForm.isError =
+		theForm.missingName || theForm.missingUrl || theForm.missingApiKey || theForm.missingId;
+	return theForm;
+}
+
+function deletePiHoleInstanceExtractAndValidate(formData: FormData): Record<string, any> {
+	const id = clean(formData.get('id') as string);
+
+	let theForm: Record<string, any> = {
+		id
+	};
+
+	theForm.missingId = !theForm.id;
+
+	theForm.isError = theForm.missingId;
 	return theForm;
 }
