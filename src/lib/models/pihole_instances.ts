@@ -33,7 +33,11 @@ export function getNextId(instances: PiHoleInstance[]): number {
 export async function deletePiHoleInstance(id: number): Promise<PiHoleInstance[]> {
 	try {
 		const instances = await getPiHoleInstances();
+		const toDelete = instances.find((instance) => instance.id === id);
 		const newInstances = instances.filter((instance) => instance.id !== id);
+		if (toDelete?.isReference && newInstances.length >= 1) {
+			newInstances[0].isReference = true;
+		}
 		await savePiHoleInstances(newInstances);
 		return newInstances;
 	} catch (error) {
@@ -65,6 +69,27 @@ export async function editPiHoleInstance(
 			newInstances = newInstances.map((instance) =>
 				instance.id === id ? { ...instance, status: preInstance.status } : instance
 			);
+		}
+		if (preInstance.isReference !== isReference) {
+			preInstance.isReference = isReference;
+			if (isReference) {
+				newInstances = newInstances.map((instance) =>
+					instance.id === id
+						? { ...instance, isReference: true }
+						: { ...instance, isReference: false }
+				);
+			} else {
+				newInstances = newInstances.map((instance) =>
+					instance.id === id
+						? { ...instance, isReference: false }
+						: { ...instance, isReference: false }
+				);
+				if (newInstances.length >= 1 && newInstances[0].id != id) {
+					newInstances[0].isReference = true;
+				} else {
+					newInstances[1].isReference = true;
+				}
+			}
 		}
 		console.log(preInstance);
 		await savePiHoleInstances(newInstances);
