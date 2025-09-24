@@ -429,37 +429,51 @@
 			</dialog>
 		{/if}
 	</div>
-	<div class="flex flex-col gap-4">
-		<h2 class="text-2xl">Batch actions</h2>
-		<h3 class="text-xl">Pause DNS Blocking</h3>
-		<div class="flex flex-row gap-2">
-			<button
-				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
-			>
-			<button
-				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}>For 10 seconds</button
-			>
-			<button
-				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}>For 30 seconds</button
-			>
-			<button
-				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}>For 5 minutes</button
-			>
-			<button
-				class="btn join-item btn-outline btn-primary"
-				onclick={() => showPauseDNSBlockingModal()}>Custom time</button
-			>
-			<button class="btn join-item btn-outline btn-primary" onclick={() => resumeDNSBlocking()}
-				>Resume Blocking</button
-			>
+	<div class="flex flex-col gap-8">
+		<div class="flex flex-col gap-4">
+			<h2 class="text-2xl">DNS Blocking</h2>
+			<div class="flex flex-row gap-2">
+				<button
+					class="btn join-item btn-outline btn-primary"
+					onclick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
+				>
+				<button
+					class="btn join-item btn-outline btn-primary"
+					onclick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}
+					>For 10 seconds</button
+				>
+				<button
+					class="btn join-item btn-outline btn-primary"
+					onclick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}
+					>For 30 seconds</button
+				>
+				<button
+					class="btn join-item btn-outline btn-primary"
+					onclick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}>For 5 minutes</button
+				>
+				<button
+					class="btn join-item btn-outline btn-primary"
+					onclick={() => showPauseDNSBlockingModal()}>Custom time</button
+				>
+				<button class="btn join-item btn-outline btn-primary" onclick={() => resumeDNSBlocking()}
+					>Resume Blocking</button
+				>
+			</div>
 		</div>
-		<h3 class="text-xl">From Reference</h3>
-		<div class="flex flex-row gap-2">
-			<button class="btn join-item btn-outline btn-primary">Update lists from Reference</button>
+		<div class="flex flex-col gap-4">
+			<h2 class="text-2xl">Batch actions</h2>
+			<div class="flex flex-col gap-4">
+				<h3 class="text-xl">All instances</h3>
+				<div class="flex flex-row gap-2">
+					<button class="btn btn-outline btn-primary">Update gravities</button>
+				</div>
+			</div>
+			<div class="flex flex-col gap-4">
+				<h3 class="text-xl">From Reference</h3>
+				<div class="flex flex-row gap-2">
+					<button class="btn btn-outline btn-primary">Update lists from Reference</button>
+				</div>
+			</div>
 		</div>
 	</div>
 	{#if showPauseDNSBlockingPanel}
