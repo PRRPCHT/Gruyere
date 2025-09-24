@@ -203,13 +203,17 @@
 								class:border-error={form?.missingApiKey}
 							/>
 						</div>
-						<div class="flex flex-col gap-2">
-							<label class="label">Is Reference</label>
-							<select class="select w-full" bind:value={editIsReference} name="isReference">
-								<option value={true}>True</option>
-								<option value={false}>False</option>
-							</select>
-						</div>
+						{#if piHoleInstances.length > 1}
+							<div class="flex flex-col gap-2">
+								<label class="label">Is Reference</label>
+								<select class="select w-full" bind:value={editIsReference} name="isReference">
+									<option value={true}>True</option>
+									<option value={false}>False</option>
+								</select>
+							</div>
+						{:else}
+							<input type="hidden" name="isReference" bind:value={editIsReference} />
+						{/if}
 						<div class="mt-3 flex w-full flex-row justify-between">
 							<div>
 								<button
