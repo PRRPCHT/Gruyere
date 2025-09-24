@@ -1,34 +1,81 @@
-export class PiHoleClient {
-	sid: string = '';
-	csrf: string = '';
-	url: string = '';
-	password: string = '';
+import type { PiHoleInstance } from '$lib/types/types';
 
-	constructor(url: string, password: string) {
-		this.url = url;
-		this.password = password;
-	}
+import { PiHoleInstanceStatus } from '$lib/types/types';
 
-	async authenticate(): Promise<boolean> {
-		try {
-			const response = await fetch(`${this.url}/api/auth`, {
-				method: 'POST',
-				body: JSON.stringify({
-					password: this.password
-				})
-			});
-
-			const data = await response.json();
-			console.log(data);
-			if (data.session) {
-				this.sid = data.session.sid;
-				this.csrf = data.session.csrf;
-				return true;
-			}
-			return false;
-		} catch (error) {
-			console.error(error);
-			return false;
+export async function authenticate(instance: PiHoleInstance) {
+	console.log('Authenticating with Pi-hole...');
+	try {
+		const response = await fetch(`${instance.url}/api/auth`, {
+			method: 'POST',
+			body: JSON.stringify({
+				password: instance.apiKey
+			})
+		});
+		if (response.status === 401 || response.status === 403) {
+			instance.status = PiHoleInstanceStatus.UNAUTHORIZED;
 		}
+		const data = await response.json();
+		if (data.session) {
+			instance.sid = data.session.sid;
+			instance.csrf = data.session.csrf;
+			instance.status = PiHoleInstanceStatus.ACTIVE;
+		} else {
+			instance.status = PiHoleInstanceStatus.UNREACHABLE;
+		}
+	} catch (error) {
+		console.error(error);
+		instance.status = PiHoleInstanceStatus.UNREACHABLE;
 	}
 }
+
+// 	async pause(): Promise<boolean> {
+// 		try {
+// 			const response = await fetch(`${this.url}/api/disable`, {
+// 				method: 'POST',
+// 				headers: {
+// 					'Content-Type': 'application/json',
+// 					Cookie: `PHPSESSID=${this.sid}`,
+// 					'X-CSRF-TOKEN': this.csrf
+// 				}
+// 			});
+// 			return response.ok;
+// 		} catch (error) {
+// 			console.error('Error pausing PiHole:', error);
+// 			return false;
+// 		}
+// 	}
+
+// 	async resume(): Promise<boolean> {
+// 		try {
+// 			const response = await fetch(`${this.url}/api/enable`, {
+// 				method: 'POST',
+// 				headers: {
+// 					'Content-Type': 'application/json',
+// 					Cookie: `PHPSESSID=${this.sid}`,
+// 					'X-CSRF-TOKEN': this.csrf
+// 				}
+// 			});
+// 			return response.ok;
+// 		} catch (error) {
+// 			console.error('Error resuming PiHole:', error);
+// 			return false;
+// 		}
+// 	}
+
+// 	async updateGravity(): Promise<boolean> {
+// 		try {
+// 			const response = await fetch(`${this.url}/api/gravity/update`, {
+// 				method: 'POST',
+// 				headers: {
+// 					'Content-Type': 'application/json',
+// 					Cookie: `PHPSESSID=${this.sid}`,
+// 					'X-CSRF-TOKEN': this.csrf
+// 				}
+// 			});
+// 			return response.ok;
+// 		} catch (error) {
+// 			console.error('Error updating gravity:', error);
+// 			return false;
+// 		}
+// 	}
+// }
