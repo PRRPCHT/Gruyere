@@ -1,6 +1,7 @@
 <script lang="ts">
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import gruyere from '$lib/assets/gruyere_256px.webp';
 	let { children } = $props();
 </script>
 
@@ -40,8 +41,14 @@
 					</svg>
 				</button> -->
 	</div>
-	<div class="flex-1">
-		<a class="btn text-xl btn-ghost" href="/">Gruyere</a>
+	<div class="flex flex-1 flex-row gap-0">
+		<a class="mx-1 flex flex-row gap-4 text-left text-xl" href="/">
+			<img src={gruyere} alt="Gruyere" width={64} height={64} />
+			<div class="flex h-[64px] flex-col items-start justify-center">
+				<div class="text-2xl">Gruyère</div>
+				<div class="text-sm text-gray-500">Because gruyère is full of holes.</div>
+			</div>
+		</a>
 	</div>
 	<div class="flex-none">
 		<button class="btn btn-square btn-ghost">
