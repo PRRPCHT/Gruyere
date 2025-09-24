@@ -43,18 +43,17 @@
 	}
 	let pauseDNSBlockingError = $state(false);
 
-	async function pauseDNSBlocking(duration: number, timeScale: PauseDurationTimeScale) {
-		const result = await fetch('/api/pauseDNSBlocking', {
-			method: 'POST',
-			body: JSON.stringify({ duration, timeScale })
-		});
-		const data = await result.json();
-		console.log(data);
-		if (data.status) {
-			data.status.forEach((status: ActionStatus) => {
-				addToast(status);
+	async function resumeDNSBlocking() {
+		piHoleInstances.forEach(async (instance) => {
+			const result = await fetch('/api/resumeDNSBlocking', {
+				method: 'POST',
+				body: JSON.stringify({ instance })
 			});
-		}
+			const data = await result.json();
+			if (data.status) {
+				addToast(data.status);
+			}
+		});
 	}
 
 	async function pauseDNSBlockingCustomDuration() {
@@ -80,7 +79,7 @@
 		});
 	}
 
-	async function pauseDNSBlocking2(duration: number, timeScale: PauseDurationTimeScale) {
+	async function pauseDNSBlocking(duration: number, timeScale: PauseDurationTimeScale) {
 		piHoleInstances.forEach(async (instance) => {
 			const result = await fetch('/api/pauseDNSBlocking', {
 				method: 'POST',
@@ -436,44 +435,27 @@
 		<div class="flex flex-row gap-2">
 			<button
 				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking2(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
+				onclick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
 			>
 			<button
 				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking2(10, PauseDurationTimeScale.SECONDS)}>For 10 seconds</button
+				onclick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}>For 10 seconds</button
 			>
 			<button
 				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking2(30, PauseDurationTimeScale.SECONDS)}>For 30 seconds</button
+				onclick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}>For 30 seconds</button
 			>
 			<button
 				class="btn join-item btn-outline btn-primary"
-				onclick={() => pauseDNSBlocking2(5, PauseDurationTimeScale.MINUTES)}>For 5 minutes</button
+				onclick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}>For 5 minutes</button
 			>
 			<button
 				class="btn join-item btn-outline btn-primary"
 				onclick={() => showPauseDNSBlockingModal()}>Custom time</button
 			>
-			<form
-				action="?/resumeDNSBlocking"
-				method="post"
-				use:enhance={({ formElement, formData, action, cancel }) => {
-					return async ({
-						result
-					}: {
-						result: ActionResult<{ success: boolean; status: ActionStatus[] }, undefined>;
-					}) => {
-						if (result.type === 'success' && result.data?.success) {
-							toasts = result.data.status.map((status: ActionStatus) => ({
-								id: toasts.length + 1,
-								status
-							}));
-						}
-					};
-				}}
+			<button class="btn join-item btn-outline btn-primary" onclick={() => resumeDNSBlocking()}
+				>Resume Blocking</button
 			>
-				<button class="btn join-item btn-outline btn-primary">Resume Blocking</button>
-			</form>
 		</div>
 		<h3 class="text-xl">From Reference</h3>
 		<div class="flex flex-row gap-2">

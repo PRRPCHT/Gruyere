@@ -10,7 +10,12 @@ export const POST = async ({ request }) => {
 	}: { duration: number; timeScale: PauseDurationTimeScale; instance: PiHoleInstance } =
 		await request.json();
 	if (!duration || duration <= 0 || !timeScale || !instance) {
-		return json({ success: false, status: null });
+		let actionStatus: ActionStatus = {
+			success: false,
+			instance: instance ? instance.name : 'Unknown instance',
+			message: 'Failed to pause DNS blocking'
+		};
+		return json({ success: false, status: actionStatus });
 	}
 	duration = Math.round(duration);
 	let success = true;
@@ -27,7 +32,12 @@ export const POST = async ({ request }) => {
 		return json({ success, status: actionStatus });
 	} catch (error) {
 		console.error('Error pausing DNS blocking:', error);
-		return json({ success: false, status: null });
+		let actionStatus: ActionStatus = {
+			success: false,
+			instance: instance.name,
+			message: 'Failed to pause DNS blocking'
+		};
+		return json({ success: false, status: actionStatus });
 	}
 };
 
