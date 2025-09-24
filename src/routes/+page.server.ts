@@ -1,4 +1,4 @@
-import { authenticate } from '$lib/clients/pihole_client';
+import { authenticate, pauseDNSBlocking } from '$lib/clients/pihole_client';
 import {
 	deletePiHoleInstance,
 	editPiHoleInstance,
@@ -6,7 +6,7 @@ import {
 	getPiHoleInstances,
 	savePiHoleInstances
 } from '$lib/models/pihole_instances';
-import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
+import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import type { Actions } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 
@@ -103,6 +103,39 @@ export const actions: Actions = {
 			console.error('Error deleting Pi-hole instance:', error);
 			return fail(500, theForm);
 		}
+	},
+	pauseDNSBlocking: async ({ request }) => {
+		let theForm: Record<string, any> = pauseDNSBlockingExtractAndValidate(await request.formData());
+		if (theForm.isError) {
+			return fail(400, theForm);
+		}
+		console.log('theForm in server', theForm);
+		let success = true;
+		let actionStatus: ActionStatus[] = [];
+		try {
+			const instances = await getPiHoleInstances();
+			await Promise.all(
+				instances.map(async (instance) => {
+					const pauseSuccess = await pauseDNSBlocking(instance, parseInt(theForm.duration));
+					success = success && pauseSuccess;
+					actionStatus.push({
+						success: pauseSuccess,
+						instance: instance.name,
+						message: pauseSuccess
+							? 'DNS blocking paused successfully'
+							: 'Failed to pause DNS blocking'
+					});
+				})
+			);
+			console.log('actionStatus in server', actionStatus);
+			return {
+				success: success,
+				status: actionStatus
+			};
+		} catch (error) {
+			console.error('Error pausing DNS blocking:', error);
+			return fail(500, theForm);
+		}
 	}
 } satisfies Actions;
 
@@ -167,5 +200,19 @@ function deletePiHoleInstanceExtractAndValidate(formData: FormData): Record<stri
 	theForm.missingId = !theForm.id;
 
 	theForm.isError = theForm.missingId;
+	return theForm;
+}
+function pauseDNSBlockingExtractAndValidate(formData: FormData): Record<string, any> {
+	const duration = clean(formData.get('duration') as string);
+	const timeScale = clean(formData.get('timeScale') as string);
+
+	let theForm: Record<string, any> = {
+		duration,
+		timeScale
+	};
+	theForm.missingDuration = !theForm.duration;
+	theForm.invalidDuration = isNaN(parseInt(theForm.duration)) || parseInt(theForm.duration) <= 0;
+	theForm.missingTimeScale = !theForm.timeScale;
+	theForm.isError = theForm.missingDuration || theForm.invalidDuration || theForm.missingTimeScale;
 	return theForm;
 }

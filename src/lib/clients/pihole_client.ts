@@ -28,6 +28,23 @@ export async function authenticate(instance: PiHoleInstance) {
 	}
 }
 
+export async function pauseDNSBlocking(instance: PiHoleInstance, duration: number) {
+	console.log('Pausing DNS blocking for Pi-hole...');
+	// try {
+	// 	const response = await fetch(`${instance.url}/api/dns/blocking`, {
+	// 		method: 'POST',
+	// 		body: JSON.stringify({
+	// 			timer: duration
+	// 		})
+	// 	});
+	// 	return response.status === 200;
+	// } catch (error) {
+	// 	console.error('Error pausing DNS blocking:', error);
+	// 	return false;
+	// }
+	return instance.url.endsWith('880');
+}
+
 // 	async pause(): Promise<boolean> {
 // 		try {
 // 			const response = await fetch(`${this.url}/api/disable`, {

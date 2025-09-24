@@ -1,8 +1,15 @@
 <script lang="ts">
-	import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
+	import {
+		PauseDurationTimeScale,
+		PiHoleInstanceStatus,
+		type ActionStatus,
+		type PiHoleInstance,
+		type Toast
+	} from '$lib/types/types';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import type { ActionResult } from '@sveltejs/kit';
+	import SuccessToast from '$lib/components/Toast.svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
 
@@ -25,6 +32,75 @@
 		editInstanceApiKey = instance?.apiKey || '';
 		editIsReference = instance?.isReference || false;
 		editInstanceId = instance?.id || 0;
+	}
+
+	let showPauseDNSBlockingPanel = $state(false);
+	let pauseDNSBlockingDuration = $state(1);
+	let pauseDNSBlockingTimeScale = $state(PauseDurationTimeScale.MINUTES);
+	function showPauseDNSBlockingModal() {
+		showPauseDNSBlockingPanel = true;
+		pauseDNSBlockingDuration = 1;
+	}
+	let pauseDNSBlockingError = $state(false);
+
+	async function pauseDNSBlocking(duration: number, timeScale: PauseDurationTimeScale) {
+		const result = await fetch('/api/pauseDNSBlocking', {
+			method: 'POST',
+			body: JSON.stringify({ duration, timeScale })
+		});
+		const data = await result.json();
+		console.log(data);
+		if (data.status) {
+			data.status.forEach((status: ActionStatus) => {
+				addToast(status);
+			});
+		}
+	}
+
+	async function pauseDNSBlockingCustomDuration() {
+		pauseDNSBlockingError = false;
+		piHoleInstances.forEach(async (instance) => {
+			const result = await fetch('/api/pauseDNSBlocking', {
+				method: 'POST',
+				body: JSON.stringify({
+					duration: pauseDNSBlockingDuration,
+					timeScale: pauseDNSBlockingTimeScale,
+					instance
+				})
+			});
+			const data = await result.json();
+			if (data.status) {
+				addToast(data.status);
+				showPauseDNSBlockingPanel = false;
+				pauseDNSBlockingDuration = 1;
+				pauseDNSBlockingTimeScale = PauseDurationTimeScale.MINUTES;
+			} else {
+				pauseDNSBlockingError = true;
+			}
+		});
+	}
+
+	async function pauseDNSBlocking2(duration: number, timeScale: PauseDurationTimeScale) {
+		piHoleInstances.forEach(async (instance) => {
+			const result = await fetch('/api/pauseDNSBlocking', {
+				method: 'POST',
+				body: JSON.stringify({ duration, timeScale, instance })
+			});
+			const data = await result.json();
+			if (data.status) {
+				addToast(data.status);
+			}
+		});
+	}
+
+	let toasts: Toast[] = $state([]);
+
+	function addToast(status: ActionStatus) {
+		let id = toasts.length + 1;
+		toasts.push({ id, status });
+		const timer = setTimeout(() => {
+			toasts = toasts.filter((toast) => toast.id !== id);
+		}, 5000);
 	}
 </script>
 
@@ -245,7 +321,6 @@
 								result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
 								update: () => Promise<void>;
 							}) => {
-								console.log(result);
 								await update();
 								if (result.type === 'success' && result.data?.success) {
 									piHoleInstances = result.data.instances;
@@ -357,15 +432,129 @@
 	</div>
 	<div class="flex flex-col gap-4">
 		<h2 class="text-2xl">Batch actions</h2>
-		<h3 class="text-xl">All instances</h3>
+		<h3 class="text-xl">Pause DNS Blocking</h3>
 		<div class="flex flex-row gap-2">
-			<button class="btn join-item btn-outline btn-primary">Pause all instances</button>
-			<button class="btn join-item btn-outline btn-primary">Resume all instances</button>
-			<button class="btn join-item btn-outline btn-primary">Update gravities</button>
+			<button
+				class="btn join-item btn-outline btn-primary"
+				onclick={() => pauseDNSBlocking2(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
+			>
+			<button
+				class="btn join-item btn-outline btn-primary"
+				onclick={() => pauseDNSBlocking2(10, PauseDurationTimeScale.SECONDS)}>For 10 seconds</button
+			>
+			<button
+				class="btn join-item btn-outline btn-primary"
+				onclick={() => pauseDNSBlocking2(30, PauseDurationTimeScale.SECONDS)}>For 30 seconds</button
+			>
+			<button
+				class="btn join-item btn-outline btn-primary"
+				onclick={() => pauseDNSBlocking2(5, PauseDurationTimeScale.MINUTES)}>For 5 minutes</button
+			>
+			<button
+				class="btn join-item btn-outline btn-primary"
+				onclick={() => showPauseDNSBlockingModal()}>Custom time</button
+			>
+			<form
+				action="?/resumeDNSBlocking"
+				method="post"
+				use:enhance={({ formElement, formData, action, cancel }) => {
+					return async ({
+						result
+					}: {
+						result: ActionResult<{ success: boolean; status: ActionStatus[] }, undefined>;
+					}) => {
+						if (result.type === 'success' && result.data?.success) {
+							toasts = result.data.status.map((status: ActionStatus) => ({
+								id: toasts.length + 1,
+								status
+							}));
+						}
+					};
+				}}
+			>
+				<button class="btn join-item btn-outline btn-primary">Resume Blocking</button>
+			</form>
 		</div>
 		<h3 class="text-xl">From Reference</h3>
 		<div class="flex flex-row gap-2">
 			<button class="btn join-item btn-outline btn-primary">Update lists from Reference</button>
 		</div>
+	</div>
+	{#if showPauseDNSBlockingPanel}
+		<dialog id="pause_dns_blocking_modal" class="modal-open modal">
+			<div class="modal-box flex flex-col gap-4">
+				<h3 class="text-lg font-bold">Pause DNS Blocking</h3>
+
+				{#if pauseDNSBlockingError}
+					<div role="alert" class="alert-soft alert alert-error">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6 shrink-0 stroke-current"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+						<span
+							>The duration field is required and must be a number (integer) greater than 0.</span
+						>
+					</div>
+				{/if}
+				{#if form?.missingTimeScale}
+					<div role="alert" class="alert-soft alert alert-error">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6 shrink-0 stroke-current"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+							/>
+						</svg>
+						<span>The time scale field is required.</span>
+					</div>
+				{/if}
+				<div class="flex flex-col gap-2" class:text-error={pauseDNSBlockingError}>
+					<label class="label">Duration</label>
+					<input
+						type="number"
+						class="input w-full"
+						bind:value={pauseDNSBlockingDuration}
+						name="duration"
+						class:border-error={pauseDNSBlockingError}
+					/>
+				</div>
+				<div class="flex flex-col gap-2" class:text-error={form?.missingTimeScale}>
+					<label class="label">Time scale</label>
+					<select class="select w-full" bind:value={pauseDNSBlockingTimeScale} name="timeScale">
+						{#each Object.values(PauseDurationTimeScale) as timeScale}
+							<option value={timeScale}>{timeScale}</option>
+						{/each}
+					</select>
+				</div>
+				<div class="mt-3 flex w-full flex-row justify-between">
+					<button class="btn btn-ghost btn-soft" onclick={() => (showPauseDNSBlockingPanel = false)}
+						>Cancel</button
+					>
+					<button class="btn btn-primary" onclick={() => pauseDNSBlockingCustomDuration()}>
+						Pause
+					</button>
+				</div>
+			</div>
+		</dialog>
+	{/if}
+	<div class="toast flex flex-col gap-2">
+		{#each toasts as toast}
+			<SuccessToast status={toast.status} />
+		{/each}
 	</div>
 </section>
