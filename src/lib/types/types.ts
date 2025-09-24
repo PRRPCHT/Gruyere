@@ -30,3 +30,21 @@ export class PiHoleInstances {
 		this.instances.push(instance);
 	}
 }
+
+export enum PauseDurationTimeScale {
+	SECONDS = 'Seconds',
+	MINUTES = 'Minutes',
+	HOURS = 'Hours',
+	DAYS = 'Days'
+}
+
+export type ActionStatus = {
+	success: boolean;
+	instance: string;
+	message: string;
+};
+
+export type Toast = {
+	id: number;
+	status: ActionStatus;
+};

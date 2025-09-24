@@ -99,3 +99,20 @@ export async function editPiHoleInstance(
 		return [];
 	}
 }
+
+export async function updatePiHoleInstanceCredentials(instance: PiHoleInstance) {
+	try {
+		const instances = await getPiHoleInstances();
+		if (!instances.find((instance) => instance.id === instance.id)) {
+			throw new Error('Instance not found');
+		}
+		const newInstances = instances.map((toEdit) =>
+			toEdit.id === instance.id
+				? { ...toEdit, status: instance.status, sid: instance.sid, csrf: instance.csrf }
+				: toEdit
+		);
+		await savePiHoleInstances(newInstances);
+	} catch (error) {
+		console.error('Error updating instance credentials:', error);
+	}
+}

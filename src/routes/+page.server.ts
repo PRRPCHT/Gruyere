@@ -1,4 +1,4 @@
-import { authenticate } from '$lib/clients/pihole_client';
+import { authenticate, pauseDNSBlocking } from '$lib/clients/pihole_client';
 import {
 	deletePiHoleInstance,
 	editPiHoleInstance,
@@ -6,18 +6,11 @@ import {
 	getPiHoleInstances,
 	savePiHoleInstances
 } from '$lib/models/pihole_instances';
-import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
+import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import type { Actions } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 
 export const load = async ({ locals }: { locals: any }) => {
-	// Ensure manager is initialized
-	// if (!piholeManager.isInitialized()) {
-	// 	await piholeManager.initialize();
-	// }
-
-	// // Get instances from singleton
-	// const instances = piholeManager.getInstances();
 	const instances = await getPiHoleInstances();
 
 	return {
