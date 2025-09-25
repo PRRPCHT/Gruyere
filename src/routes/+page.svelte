@@ -10,6 +10,8 @@
 	import type { PageProps } from './$types';
 	import type { ActionResult } from '@sveltejs/kit';
 	import SuccessToast from '$lib/components/Toast.svelte';
+	import Error from '$lib/components/Error.svelte';
+	import ActionButton from '$lib/components/ActionButton.svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
 
@@ -195,58 +197,13 @@
 					>
 						<input type="hidden" name="id" value={editInstanceId} />
 						{#if form?.missingName}
-							<div role="alert" class="alert-soft alert alert-error">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6 shrink-0 stroke-current"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span>The name field is required.</span>
-							</div>
+							<Error message="The name field is required." />
 						{/if}
 						{#if form?.missingUrl}
-							<div role="alert" class="alert-soft alert alert-error">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6 shrink-0 stroke-current"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span>The URL field is required.</span>
-							</div>
+							<Error message="The URL field is required." />
 						{/if}
 						{#if form?.missingApiKey}
-							<div role="alert" class="alert-soft alert alert-error">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6 shrink-0 stroke-current"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span>The API key field is required.</span>
-							</div>
+							<Error message="The API key field is required." />
 						{/if}
 						<div class="flex flex-col gap-2" class:text-error={form?.missingName}>
 							<label class="label">Instance name</label>
@@ -332,58 +289,13 @@
 						}}
 					>
 						{#if form?.missingName}
-							<div role="alert" class="alert-soft alert alert-error">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6 shrink-0 stroke-current"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span>The name field is required.</span>
-							</div>
+							<Error message="The name field is required." />
 						{/if}
 						{#if form?.missingUrl}
-							<div role="alert" class="alert-soft alert alert-error">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6 shrink-0 stroke-current"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span>The URL field is required.</span>
-							</div>
+							<Error message="The URL field is required." />
 						{/if}
 						{#if form?.missingApiKey}
-							<div role="alert" class="alert-soft alert alert-error">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									class="h-6 w-6 shrink-0 stroke-current"
-									fill="none"
-									viewBox="0 0 24 24"
-								>
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="2"
-										d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-									/>
-								</svg>
-								<span>The API key field is required.</span>
-							</div>
+							<Error message="The API key field is required." />
 						{/if}
 						<div class:text-error={form?.missingName}>
 							<label class="label">Instance name</label>
@@ -433,31 +345,21 @@
 		<div class="flex flex-col gap-4">
 			<h2 class="text-2xl">DNS Blocking</h2>
 			<div class="flex flex-row flex-wrap gap-2">
-				<button
-					class="btn join-item btn-outline btn-primary"
-					onclick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
-				>
-				<button
-					class="btn join-item btn-outline btn-primary"
-					onclick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}
-					>For 10 seconds</button
-				>
-				<button
-					class="btn join-item btn-outline btn-primary"
-					onclick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}
-					>For 30 seconds</button
-				>
-				<button
-					class="btn join-item btn-outline btn-primary"
-					onclick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}>For 5 minutes</button
-				>
-				<button
-					class="btn join-item btn-outline btn-primary"
-					onclick={() => showPauseDNSBlockingModal()}>Custom time</button
-				>
-				<button class="btn join-item btn-outline btn-primary" onclick={() => resumeDNSBlocking()}
-					>Resume Blocking</button
-				>
+				<ActionButton
+					label="Indefinitely"
+					onClick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}
+				/>
+				<ActionButton
+					label="For 10 seconds"
+					onClick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}
+				/>
+				<ActionButton
+					label="For 5 minutes"
+					onClick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}
+				/>
+				<ActionButton label="Pause for custom time" onClick={() => showPauseDNSBlockingModal()} />
+				<ActionButton label="Custom time" onClick={() => showPauseDNSBlockingModal()} />
+				<ActionButton label="Resume Blocking" onClick={() => resumeDNSBlocking()} />
 			</div>
 		</div>
 
@@ -480,42 +382,12 @@
 				<h3 class="text-lg font-bold">Pause DNS Blocking</h3>
 
 				{#if pauseDNSBlockingError}
-					<div role="alert" class="alert-soft alert alert-error">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-6 w-6 shrink-0 stroke-current"
-							fill="none"
-							viewBox="0 0 24 24"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
-						<span
-							>The duration field is required and must be a number (integer) greater than 0.</span
-						>
-					</div>
+					<Error
+						message="The duration field is required and must be a number (integer) greater than 0."
+					/>
 				{/if}
 				{#if form?.missingTimeScale}
-					<div role="alert" class="alert-soft alert alert-error">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-6 w-6 shrink-0 stroke-current"
-							fill="none"
-							viewBox="0 0 24 24"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-							/>
-						</svg>
-						<span>The time scale field is required.</span>
-					</div>
+					<Error message="The time scale field is required." />
 				{/if}
 				<div class="flex flex-col gap-2" class:text-error={pauseDNSBlockingError}>
 					<label class="label">Duration</label>

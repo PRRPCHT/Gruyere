@@ -3,6 +3,6 @@
 	let { status }: { status: ActionStatus } = $props();
 </script>
 
-<div class="alert alert-{status.success ? 'success' : 'error'}">
+<div class="alert" class:alert-success={status.success} class:alert-error={!status.success}>
 	<span>{status.instance} - {status.message}</span>
 </div>
