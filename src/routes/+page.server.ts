@@ -7,10 +7,32 @@ import {
 	savePiHoleInstances
 } from '$lib/models/pihole_instances';
 import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
-import type { Actions } from '@sveltejs/kit';
-import { fail } from '@sveltejs/kit';
+import type { Actions, ServerLoad } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 
-export const load = async ({ locals }: { locals: any }) => {
+export const load: ServerLoad = async ({ cookies }) => {
+	// Check authentication
+	const sessionCookie = cookies.get('auth_session');
+	let isAuthenticated = false;
+
+	if (sessionCookie) {
+		try {
+			const expires = parseInt(sessionCookie);
+			isAuthenticated = Date.now() < expires;
+
+			if (!isAuthenticated) {
+				cookies.delete('auth_session', { path: '/' });
+			}
+		} catch (error) {
+			console.error('Invalid session cookie:', error);
+			cookies.delete('auth_session', { path: '/' });
+		}
+	}
+
+	if (!isAuthenticated) {
+		throw redirect(302, '/auth');
+	}
+
 	const instances = await getPiHoleInstances();
 
 	return {
@@ -19,7 +41,12 @@ export const load = async ({ locals }: { locals: any }) => {
 };
 //bamcRAdfwFqecE0HjDLgLqfGon5Y6TykFIIEvrN3mf0=
 export const actions: Actions = {
-	addPiHoleInstance: async ({ request }) => {
+	addPiHoleInstance: async ({ request, cookies }) => {
+		// Check authentication
+		const sessionCookie = cookies.get('auth_session');
+		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+			return fail(401, { error: 'Unauthorized' });
+		}
 		let theForm: Record<string, any> = addPiHoleInstanceExtractAndValidate(
 			await request.formData()
 		);
@@ -55,7 +82,12 @@ export const actions: Actions = {
 			return fail(500, theForm);
 		}
 	},
-	editPiHoleInstance: async ({ request }) => {
+	editPiHoleInstance: async ({ request, cookies }) => {
+		// Check authentication
+		const sessionCookie = cookies.get('auth_session');
+		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+			return fail(401, { error: 'Unauthorized' });
+		}
 		let theForm: Record<string, any> = editPiHoleInstanceExtractAndValidate(
 			await request.formData()
 		);
@@ -79,7 +111,12 @@ export const actions: Actions = {
 			return fail(500, theForm);
 		}
 	},
-	deletePiHoleInstance: async ({ request }) => {
+	deletePiHoleInstance: async ({ request, cookies }) => {
+		// Check authentication
+		const sessionCookie = cookies.get('auth_session');
+		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+			return fail(401, { error: 'Unauthorized' });
+		}
 		let theForm: Record<string, any> = deletePiHoleInstanceExtractAndValidate(
 			await request.formData()
 		);
