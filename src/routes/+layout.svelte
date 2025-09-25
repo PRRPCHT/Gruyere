@@ -1,7 +1,12 @@
 <script lang="ts">
 	import '../app.css';
 	import gruyere from '$lib/assets/gruyere_256px.webp';
-	let { children } = $props();
+	import { authStore } from '$lib/stores/auth';
+	import type { LayoutData } from './$types';
+	let { children, data }: { children: any; data: LayoutData } = $props();
+
+	// Initialize auth store immediately with server data to prevent flicker
+	authStore.initialize(data.isAuthenticated);
 </script>
 
 <svelte:head>
@@ -51,8 +56,10 @@
 		</a>
 	</div>
 	<div class="flex flex-none flex-row gap-2">
-		<button class="btn btn-ghost"> Settings </button>
-		<button class="btn btn-ghost"> Log out </button>
+		{#if $authStore.isAuthenticated}
+			<button class="btn btn-ghost"> Settings </button>
+			<button class="btn btn-ghost" onclick={() => authStore.logout()}> Log out </button>
+		{/if}
 	</div>
 </div>
 <main class="mx-auto max-w-6xl p-6">

@@ -1,8 +1,14 @@
 import { pauseDNSBlocking } from '$lib/clients/pihole_client';
 import { PauseDurationTimeScale, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import { json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
 
-export const POST = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies }) => {
+	// Check authentication
+	const sessionCookie = cookies.get('auth_session');
+	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
+	}
 	let {
 		duration,
 		timeScale,
