@@ -115,7 +115,7 @@
 						<th>URL</th>
 						<th>Is Reference</th>
 						<th>Status</th>
-						<th>Actions</th>
+						<th> </th>
 					</tr>
 				</thead>
 				<tbody>
@@ -126,7 +126,7 @@
 								><a
 									href={piHoleInstance.url + '/admin'}
 									target="_blank"
-									class="link no-underline hover:underline">{piHoleInstance.url}</a
+									class="link no-underline hover:text-secondary">{piHoleInstance.url}</a
 								></td
 							>
 							<td
@@ -143,7 +143,7 @@
 									<div class="badge badge-soft badge-error">Not active</div>
 								{/if}
 							</td>
-							<td>
+							<td class="flex flex-row justify-end">
 								<button
 									class="btn btn-ghost btn-soft btn-sm"
 									onclick={() => showEditModal(piHoleInstance.id)}
@@ -432,7 +432,7 @@
 	<div class="flex flex-col gap-8">
 		<div class="flex flex-col gap-4">
 			<h2 class="text-2xl">DNS Blocking</h2>
-			<div class="flex flex-row gap-2">
+			<div class="flex flex-row flex-wrap gap-2">
 				<button
 					class="btn join-item btn-outline btn-primary"
 					onclick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}>Indefinitely</button
@@ -460,19 +460,17 @@
 				>
 			</div>
 		</div>
+
 		<div class="flex flex-col gap-4">
-			<h2 class="text-2xl">Batch actions</h2>
-			<div class="flex flex-col gap-4">
-				<h3 class="text-xl">All instances</h3>
-				<div class="flex flex-row gap-2">
-					<button class="btn btn-outline btn-primary">Update gravities</button>
-				</div>
+			<h3 class="text-xl">All instances</h3>
+			<div class="flex flex-row flex-wrap gap-2">
+				<button class="btn btn-outline btn-primary">Update gravities</button>
 			</div>
-			<div class="flex flex-col gap-4">
-				<h3 class="text-xl">From Reference</h3>
-				<div class="flex flex-row gap-2">
-					<button class="btn btn-outline btn-primary">Update lists from Reference</button>
-				</div>
+		</div>
+		<div class="flex flex-col gap-4">
+			<h3 class="text-xl">From Reference</h3>
+			<div class="flex flex-row flex-wrap gap-2">
+				<button class="btn btn-outline btn-primary">Update lists from Reference</button>
 			</div>
 		</div>
 	</div>
