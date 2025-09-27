@@ -1,5 +1,10 @@
 import { pauseDNSBlocking } from '$lib/clients/pihole_client';
-import { PauseDurationTimeScale, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
+import {
+	PauseDurationTimeScale,
+	PiHoleInstanceStatus,
+	type ActionStatus,
+	type PiHoleInstance
+} from '$lib/types/types';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
@@ -7,7 +12,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
-		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
+		let actionStatus: ActionStatus = {
+			success: false,
+			instance: 'Unknown instance',
+			message: 'Unauthorized',
+			instanceStatus: PiHoleInstanceStatus.UNAUTHORIZED
+		};
+		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
 	let {
 		duration,
@@ -19,7 +30,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: instance ? instance.name : 'Unknown instance',
-			message: 'Failed to pause DNS blocking'
+			message: 'Failed to pause DNS blocking',
+			instanceStatus: instance?.status || PiHoleInstanceStatus.UNREACHABLE
 		};
 		return json({ success: false, status: actionStatus });
 	}
@@ -33,7 +45,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			instance: instance.name,
 			message: pauseSuccess
 				? 'DNS blocking paused successfully for ' + duration + ' ' + timeScale
-				: 'Failed to pause DNS blocking for ' + duration + ' ' + timeScale
+				: 'Failed to pause DNS blocking for ' + duration + ' ' + timeScale,
+			instanceStatus: instance.status
 		};
 		return json({ success, status: actionStatus });
 	} catch (error) {
@@ -41,7 +54,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
-			message: 'Failed to pause DNS blocking'
+			message: 'Failed to pause DNS blocking',
+			instanceStatus: instance.status
 		};
 		return json({ success: false, status: actionStatus });
 	}
