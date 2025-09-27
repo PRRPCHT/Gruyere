@@ -50,3 +50,12 @@ export type Toast = {
 	id: number;
 	status: ActionStatus;
 };
+
+export type Group = {
+	name: string;
+	comment: string | null;
+	enabled: boolean;
+	id: number;
+	date_added: number;
+	date_modified: number;
+};

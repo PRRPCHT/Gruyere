@@ -1,5 +1,5 @@
 import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
-import type { PiHoleInstance } from '$lib/types/types';
+import type { Group, PiHoleInstance } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
 
 // Check if the token is still valid and update the instance credentials if needed
@@ -152,6 +152,61 @@ export async function restartDNS(instance: PiHoleInstance): Promise<boolean> {
 	}
 }
 
+// Get the groups from the reference Pi-hole instance
+// @param instance - The reference instance to get the groups from
+// @returns the groups from the reference
+export async function getGroupsFromReference(instance: PiHoleInstance): Promise<Group[] | null> {
+	console.log('Getting groups from reference for Pi-hole', instance.name);
+	try {
+		let instanceStatus = await checkAuthentication(instance);
+		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
+			throw new Error('Instance is not active');
+		}
+		const response = await fetch(`${instance.url}/api/groups`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			}
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed getting groups from reference');
+		}
+		console.log(response);
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		checkError(error, instance, 'Error getting groups from reference');
+		return null;
+	}
+}
+
+// Update the group for the Pi-hole instance
+// @param instance - The instance to update the group for
+// @param group - The group to update
+// @returns true if the group is updated successfully, false otherwise
+export async function updateGroupForInstance(
+	instance: PiHoleInstance,
+	group: Group
+): Promise<boolean> {
+	console.log('Updating group for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/groups`, {
+			method: 'PUT',
+			body: JSON.stringify({ name: group.name, comment: group.comment, enabled: group.enabled })
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed updating group for Pi-hole instance.');
+		}
+		const data = await response.json();
+		return data.errors === null || data.errors.length === 0;
+	} catch (error) {
+		checkError(error, instance, 'Error updating group');
+		return false;
+	}
+}
+
 // Check if the error is a connection timeout or host unreachable or something else and prints it in the console
 // @param error - The error to check
 // @param instance - The instance to check the error for
@@ -159,6 +214,7 @@ export async function restartDNS(instance: PiHoleInstance): Promise<boolean> {
 function checkError(error: any, instance: PiHoleInstance, message: string) {
 	instance.status = PiHoleInstanceStatus.UNREACHABLE;
 	if (
+		//EHOSTUNREACH
 		error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
 		error.cause?.code === 'EHOSTDOWN' ||
 		error.cause?.code === 'ECONNREFUSED' ||

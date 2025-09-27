@@ -186,6 +186,24 @@
 		await refreshInstances(newInstances);
 	}
 
+	async function updateGroupsFromReference() {
+		const result = await fetch('/api/updateGroupsFromReference', {
+			method: 'POST',
+			body: JSON.stringify({})
+		});
+		const data = await result.json();
+		if (data.success) {
+			if (data.status) {
+				addToast(data.status);
+			}
+			if (data.statuses) {
+				data.statuses.forEach((status: ActionStatus) => {
+					addToast(status);
+				});
+			}
+		}
+	}
+
 	onMount(() => {
 		refreshInstancesStatus();
 		setInterval(() => {
@@ -467,7 +485,10 @@
 		<div class="flex flex-col gap-4">
 			<h3 class="text-xl">From Reference</h3>
 			<div class="flex flex-row flex-wrap gap-2">
-				<button class="btn btn-outline btn-primary">Update lists from Reference</button>
+				<ActionButton
+					label="Update lists from Reference"
+					onClick={() => updateGroupsFromReference()}
+				/>
 			</div>
 		</div>
 	</div>
