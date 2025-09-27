@@ -33,7 +33,10 @@ export const load: ServerLoad = async ({ cookies }) => {
 		throw redirect(302, '/auth');
 	}
 
-	const instances = await getPiHoleInstances();
+	let instances = await getPiHoleInstances();
+	instances.forEach((instance) => {
+		instance.status = PiHoleInstanceStatus.REFRESHING;
+	});
 
 	return {
 		instances: instances

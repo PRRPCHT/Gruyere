@@ -1,7 +1,8 @@
 export enum PiHoleInstanceStatus {
 	ACTIVE = 'active',
 	UNAUTHORIZED = 'unauthorized',
-	UNREACHABLE = 'unreachable'
+	UNREACHABLE = 'unreachable',
+	REFRESHING = 'refreshing'
 }
 
 export type PiHoleInstance = {
@@ -42,6 +43,7 @@ export type ActionStatus = {
 	success: boolean;
 	instance: string;
 	message: string;
+	instanceStatus: PiHoleInstanceStatus;
 };
 
 export type Toast = {
