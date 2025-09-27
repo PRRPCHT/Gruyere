@@ -12,6 +12,7 @@
 	import SuccessToast from '$lib/components/Toast.svelte';
 	import Error from '$lib/components/Error.svelte';
 	import ActionButton from '$lib/components/ActionButton.svelte';
+	import { onMount } from 'svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
 
@@ -45,22 +46,66 @@
 	}
 	let pauseDNSBlockingError = $state(false);
 
-	async function resumeDNSBlocking() {
-		piHoleInstances.forEach(async (instance) => {
-			const result = await fetch('/api/resumeDNSBlocking', {
-				method: 'POST',
-				body: JSON.stringify({ instance })
-			});
-			const data = await result.json();
-			if (data.status) {
-				addToast(data.status);
-			}
+	async function refreshInstances(newInstances: PiHoleInstance[]) {
+		// const result = await fetch('/api/refreshInstances', {
+		// 	method: 'GET'
+		// });
+		// const data = await result.json();
+		// if (data.success) {
+		// 	piHoleInstances = data.instances;
+		// }
+		piHoleInstances = newInstances;
+	}
+
+	async function refreshInstancesStatus() {
+		// let newInstances = [...piHoleInstances];
+		// await Promise.all(
+		// 	newInstances.map(async (instance) => {
+		// 		const result = await fetch('/api/refreshInstanceStatus?id=' + instance.id, {
+		// 			method: 'GET'
+		// 		});
+		// 		const data = await result.json();
+		// 		console.log(instance.name, data.status);
+		// 		if (data.status) {
+		// 			instance.status = data.status;
+		// 		}
+		// 	})
+		// );
+		// console.log(newInstances);
+		const result = await fetch('/api/refreshInstancesStatus', {
+			method: 'GET'
 		});
+		const data = await result.json();
+		if (data.success) {
+			piHoleInstances = data.instances;
+		}
+		//piHoleInstances = newInstances;
+		console.log('Refreshed instances status');
+	}
+
+	async function resumeDNSBlocking() {
+		//await all promises to finish
+		let newInstances = piHoleInstances;
+		await Promise.all(
+			newInstances.map(async (instance) => {
+				const result = await fetch('/api/resumeDNSBlocking', {
+					method: 'POST',
+					body: JSON.stringify({ instance })
+				});
+				const data = await result.json();
+				if (data.status) {
+					addToast(data.status);
+				}
+				instance.status = data.status.instanceStatus;
+			})
+		);
+		await refreshInstances(newInstances);
 	}
 
 	async function pauseDNSBlockingCustomDuration() {
 		pauseDNSBlockingError = false;
-		piHoleInstances.forEach(async (instance) => {
+		let newInstances = piHoleInstances;
+		newInstances.forEach(async (instance) => {
 			const result = await fetch('/api/pauseDNSBlocking', {
 				method: 'POST',
 				body: JSON.stringify({
@@ -79,10 +124,12 @@
 				pauseDNSBlockingError = true;
 			}
 		});
+		await refreshInstances(newInstances);
 	}
 
 	async function pauseDNSBlocking(duration: number, timeScale: PauseDurationTimeScale) {
-		piHoleInstances.forEach(async (instance) => {
+		let newInstances = piHoleInstances;
+		newInstances.forEach(async (instance) => {
 			const result = await fetch('/api/pauseDNSBlocking', {
 				method: 'POST',
 				body: JSON.stringify({ duration, timeScale, instance })
@@ -90,8 +137,10 @@
 			const data = await result.json();
 			if (data.status) {
 				addToast(data.status);
+				instance.status = data.status.instanceStatus;
 			}
 		});
+		await refreshInstances(newInstances);
 	}
 
 	let toasts: Toast[] = $state([]);
@@ -103,6 +152,46 @@
 			toasts = toasts.filter((toast) => toast.id !== id);
 		}, 5000);
 	}
+
+	async function updateGravities() {
+		let newInstances = piHoleInstances;
+		newInstances.forEach(async (instance) => {
+			const result = await fetch('/api/updateGravities', {
+				method: 'POST',
+				body: JSON.stringify({ instance })
+			});
+			const data = await result.json();
+			console.log(data);
+			if (data.status) {
+				addToast(data.status);
+			}
+		});
+		await refreshInstances(newInstances);
+	}
+
+	async function restartDNS() {
+		let newInstances = piHoleInstances;
+		newInstances.forEach(async (instance) => {
+			const result = await fetch('/api/restartDNS', {
+				method: 'POST',
+				body: JSON.stringify({ instance })
+			});
+			const data = await result.json();
+			console.log(data);
+			if (data.status) {
+				addToast(data.status);
+				instance.status = data.status.instanceStatus;
+			}
+		});
+		await refreshInstances(newInstances);
+	}
+
+	onMount(() => {
+		refreshInstancesStatus();
+		setInterval(() => {
+			refreshInstancesStatus();
+		}, 10000);
+	});
 </script>
 
 <section class="flex flex-col gap-8">
@@ -141,8 +230,10 @@
 									<div class="badge badge-soft badge-success">Active</div>
 								{:else if piHoleInstance.status === PiHoleInstanceStatus.UNAUTHORIZED}
 									<div class="badge badge-soft badge-error">Unauthorized</div>
-								{:else}
+								{:else if piHoleInstance.status === PiHoleInstanceStatus.UNREACHABLE}
 									<div class="badge badge-soft badge-error">Not active</div>
+								{:else}
+									<div class="badge badge-soft">Refreshing</div>
 								{/if}
 							</td>
 							<td class="flex flex-row justify-end">
@@ -354,10 +445,13 @@
 					onClick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}
 				/>
 				<ActionButton
+					label="For 30 seconds"
+					onClick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}
+				/>
+				<ActionButton
 					label="For 5 minutes"
 					onClick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}
 				/>
-				<ActionButton label="Pause for custom time" onClick={() => showPauseDNSBlockingModal()} />
 				<ActionButton label="Custom time" onClick={() => showPauseDNSBlockingModal()} />
 				<ActionButton label="Resume Blocking" onClick={() => resumeDNSBlocking()} />
 			</div>
@@ -366,7 +460,8 @@
 		<div class="flex flex-col gap-4">
 			<h3 class="text-xl">All instances</h3>
 			<div class="flex flex-row flex-wrap gap-2">
-				<button class="btn btn-outline btn-primary">Update gravities</button>
+				<ActionButton label="Update Gravities" onClick={() => updateGravities()} />
+				<ActionButton label="Restart DNS" onClick={() => restartDNS()} />
 			</div>
 		</div>
 		<div class="flex flex-col gap-4">
