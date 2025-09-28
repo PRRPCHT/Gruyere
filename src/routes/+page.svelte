@@ -204,11 +204,30 @@
 		}
 	}
 
+	async function updateListsFromReference() {
+		const result = await fetch('/api/updateListsFromReference', {
+			method: 'POST',
+			body: JSON.stringify({})
+		});
+		const data = await result.json();
+		console.log(data);
+		if (data.success) {
+			if (data.status) {
+				addToast(data.status);
+			}
+		}
+		if (data.statuses) {
+			data.statuses.forEach((status: ActionStatus) => {
+				addToast(status);
+			});
+		}
+	}
+
 	onMount(() => {
 		refreshInstancesStatus();
-		setInterval(() => {
-			refreshInstancesStatus();
-		}, 10000);
+		// setInterval(() => {
+		// 	refreshInstancesStatus();
+		// }, 10000);
 	});
 </script>
 
@@ -488,6 +507,10 @@
 				<ActionButton
 					label="Update groups from Reference"
 					onClick={() => updateGroupsFromReference()}
+				/>
+				<ActionButton
+					label="Update lists from Reference"
+					onClick={() => updateListsFromReference()}
 				/>
 			</div>
 		</div>

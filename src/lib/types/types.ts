@@ -59,3 +59,24 @@ export type Group = {
 	date_added: number;
 	date_modified: number;
 };
+
+export enum ListType {
+	ALLOW = 'allow',
+	BLOCK = 'block'
+}
+
+export type List = {
+	address: string;
+	type: ListType;
+	comment: string | null;
+	groups: number[];
+	enabled: boolean;
+	id: number;
+	date_added: number;
+	date_modified: number;
+	date_updated: number;
+	valid_domains: number;
+	invalid_domains: number;
+	abp_entries: number;
+	status: number;
+};

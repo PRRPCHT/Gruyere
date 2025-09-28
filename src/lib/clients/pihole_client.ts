@@ -204,9 +204,69 @@ export async function updateGroupForInstance(
 		}
 		const data = await response.json();
 		console.log('The data is:', data);
-		return data.processed.errors.length === 0;
+		return data.processed.errors.length === 0; //TODO: Change this to check if the group is updated partially
 	} catch (error) {
 		checkError(error, instance, 'Error updating group');
+		return false;
+	}
+}
+
+// Get the lists from the reference Pi-hole instance
+// @param instance - The reference instance to get the lists from
+// @returns the lists from the reference
+export async function getListsFromReference(instance: PiHoleInstance): Promise<List[] | null> {
+	console.log('Getting lists from reference for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/lists`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			}
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed getting lists from reference');
+		}
+		const data = await response.json();
+		return data.lists ? data.lists : null;
+	} catch (error) {
+		checkError(error, instance, 'Error getting lists from reference');
+		return null;
+	}
+}
+
+// Update the list for the Pi-hole instance
+// @param instance - The instance to update the list for
+// @param list - The list to update
+// @returns true if the list is updated successfully, false otherwise
+export async function updateListForInstance(
+	instance: PiHoleInstance,
+	list: List
+): Promise<boolean> {
+	console.log('Updating list for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/lists/${list.address}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			},
+			body: JSON.stringify({
+				groups: list.groups,
+				type: list.type,
+				comment: list.comment,
+				enabled: list.enabled
+			})
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed updating list for Pi-hole instance.');
+		}
+		const data = await response.json();
+		return data.processed.errors.length === 0; //TODO: Change this to check if the list is updated partially
+	} catch (error) {
+		checkError(error, instance, 'Error updating list');
 		return false;
 	}
 }
