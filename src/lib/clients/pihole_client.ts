@@ -1,6 +1,7 @@
 import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
-import type { Group, PiHoleInstance } from '$lib/types/types';
+import type { Group, List, PiHoleInstance } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
+import type { group } from 'console';
 
 // Check if the token is still valid and update the instance credentials if needed
 // @param instance - The instance to check authentication for
@@ -172,9 +173,8 @@ export async function getGroupsFromReference(instance: PiHoleInstance): Promise<
 		if (response.status !== 200) {
 			throw new Error('Failed getting groups from reference');
 		}
-		console.log(response);
 		const data = await response.json();
-		return data;
+		return data.groups ? data.groups : null;
 	} catch (error) {
 		checkError(error, instance, 'Error getting groups from reference');
 		return null;
@@ -189,18 +189,22 @@ export async function updateGroupForInstance(
 	instance: PiHoleInstance,
 	group: Group
 ): Promise<boolean> {
-	console.log('Updating group for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/groups`, {
+		const response = await fetch(`${instance.url}/api/groups/${group.name}`, {
 			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			},
 			body: JSON.stringify({ name: group.name, comment: group.comment, enabled: group.enabled })
 		});
 		if (response.status !== 200) {
 			throw new Error('Failed updating group for Pi-hole instance.');
 		}
 		const data = await response.json();
-		return data.errors === null || data.errors.length === 0;
+		console.log('The data is:', data);
+		return data.processed.errors.length === 0;
 	} catch (error) {
 		checkError(error, instance, 'Error updating group');
 		return false;

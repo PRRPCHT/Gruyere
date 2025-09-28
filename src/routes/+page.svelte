@@ -486,7 +486,7 @@
 			<h3 class="text-xl">From Reference</h3>
 			<div class="flex flex-row flex-wrap gap-2">
 				<ActionButton
-					label="Update lists from Reference"
+					label="Update groups from Reference"
 					onClick={() => updateGroupsFromReference()}
 				/>
 			</div>

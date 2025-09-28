@@ -38,22 +38,24 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (groupsFromReference !== null) {
 			let statuses: ActionStatus[] = [];
 			const instances = await getPiHoleInstances();
-			instances.forEach(async (instance) => {
+			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
 					const actionStatus = await updateGroupsForInstance(instance, groupsFromReference);
+					console.log('The action status is:', actionStatus);
 					statuses.push(actionStatus);
+					return actionStatus;
 				}
 			});
+			await Promise.all(promises);
 			return json({ success: true, status: null, statuses: statuses }, { status: 200 });
 		}
-		console.log(groupsFromReference);
 		const actionStatus: ActionStatus = {
-			success: true,
+			success: false,
 			instance: reference.name,
 			message: "Couldn't get the groups from the reference",
 			instanceStatus: reference.status
 		};
-		return json({ success: true, status: actionStatus });
+		return json({ success: true, status: actionStatus, statuses: null });
 	} catch (error) {
 		console.error('Error getting the groups from the reference:', error);
 		let actionStatus: ActionStatus = {
