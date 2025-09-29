@@ -1,5 +1,5 @@
 import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
-import type { Group, List, PiHoleInstance } from '$lib/types/types';
+import type { Client, Group, List, PiHoleInstance } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
 import type { group } from 'console';
 
@@ -290,6 +290,61 @@ function checkError(error: any, instance: PiHoleInstance, message: string) {
 		console.error(instance.name, '- Connection timeout or host unreachable');
 	} else {
 		console.error(instance.name, '-', message, error);
+	}
+}
+
+export async function getClientsFromReference(instance: PiHoleInstance): Promise<Client[] | null> {
+	console.log('Getting clients from reference for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/clients`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			}
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed getting clients from reference');
+		}
+		const data = await response.json();
+		return data.clients ? data.clients : null;
+	} catch (error) {
+		checkError(error, instance, 'Error getting clients from reference');
+		return null;
+	}
+}
+
+// Update the client for the Pi-hole instance
+// @param instance - The instance to update the client for
+// @param client - The client to update
+// @returns true if the client is updated successfully, false otherwise
+export async function updateClientForInstance(
+	instance: PiHoleInstance,
+	client: Client
+): Promise<boolean> {
+	console.log('Updating client for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/clients/${client.client}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			},
+			body: JSON.stringify({
+				groups: client.groups,
+				comment: client.comment
+			})
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed updating client for Pi-hole instance.');
+		}
+		const data = await response.json();
+		return data.processed.errors.length === 0; //TODO: Change this to check if the client is updated partially
+	} catch (error) {
+		checkError(error, instance, 'Error updating client');
+		return false;
 	}
 }
 

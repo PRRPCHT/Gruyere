@@ -223,6 +223,25 @@
 		}
 	}
 
+	async function updateClientsFromReference() {
+		const result = await fetch('/api/updateClientsFromReference', {
+			method: 'POST',
+			body: JSON.stringify({})
+		});
+		const data = await result.json();
+
+		console.log(data);
+		if (data.status) {
+			addToast(data.status);
+		}
+
+		if (data.statuses) {
+			data.statuses.forEach((status: ActionStatus) => {
+				addToast(status);
+			});
+		}
+	}
+
 	onMount(() => {
 		refreshInstancesStatus();
 		// setInterval(() => {
@@ -511,6 +530,10 @@
 				<ActionButton
 					label="Update lists from Reference"
 					onClick={() => updateListsFromReference()}
+				/>
+				<ActionButton
+					label="Update clients from Reference"
+					onClick={() => updateClientsFromReference()}
 				/>
 			</div>
 		</div>

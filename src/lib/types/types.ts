@@ -80,3 +80,13 @@ export type List = {
 	abp_entries: number;
 	status: number;
 };
+
+export type Client = {
+	client: string;
+	comment: string | null;
+	groups: number[];
+	id: number;
+	date_added: number;
+	date_modified: number;
+	name: string | null;
+};
