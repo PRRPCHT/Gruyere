@@ -261,9 +261,9 @@
 
 	onMount(() => {
 		refreshInstancesStatus();
-		// setInterval(() => {
-		// 	refreshInstancesStatus();
-		// }, 10000);
+		setInterval(() => {
+			refreshInstancesStatus();
+		}, 10000);
 	});
 </script>
 
