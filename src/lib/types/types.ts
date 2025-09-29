@@ -1,7 +1,8 @@
 export enum PiHoleInstanceStatus {
 	ACTIVE = 'active',
 	UNAUTHORIZED = 'unauthorized',
-	UNREACHABLE = 'unreachable'
+	UNREACHABLE = 'unreachable',
+	REFRESHING = 'refreshing'
 }
 
 export type PiHoleInstance = {
@@ -42,9 +43,73 @@ export type ActionStatus = {
 	success: boolean;
 	instance: string;
 	message: string;
+	instanceStatus: PiHoleInstanceStatus;
 };
 
 export type Toast = {
 	id: number;
 	status: ActionStatus;
+};
+
+export type Group = {
+	name: string;
+	comment: string | null;
+	enabled: boolean;
+	id: number;
+	date_added: number;
+	date_modified: number;
+};
+
+export enum ListType {
+	ALLOW = 'allow',
+	BLOCK = 'block'
+}
+
+export type List = {
+	address: string;
+	type: ListType;
+	comment: string | null;
+	groups: number[];
+	enabled: boolean;
+	id: number;
+	date_added: number;
+	date_modified: number;
+	date_updated: number;
+	valid_domains: number;
+	invalid_domains: number;
+	abp_entries: number;
+	status: number;
+};
+
+export type Client = {
+	client: string;
+	comment: string | null;
+	groups: number[];
+	id: number;
+	date_added: number;
+	date_modified: number;
+	name: string | null;
+};
+
+export enum DomainType {
+	ALLOW = 'allow',
+	DENY = 'deny'
+}
+
+export enum DomainKind {
+	EXACT = 'exact',
+	REGEX = 'regex'
+}
+
+export type Domain = {
+	domain: string;
+	unicode: string;
+	type: DomainType;
+	kind: DomainKind;
+	comment: string | null;
+	groups: number[];
+	enabled: boolean;
+	id: number;
+	date_added: number;
+	date_modified: number;
 };
