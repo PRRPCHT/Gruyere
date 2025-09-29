@@ -1,5 +1,5 @@
 import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
-import type { Client, Group, List, PiHoleInstance } from '$lib/types/types';
+import type { Client, Domain, Group, List, PiHoleInstance } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
 import type { group } from 'console';
 
@@ -271,28 +271,74 @@ export async function updateListForInstance(
 	}
 }
 
-// Check if the error is a connection timeout or host unreachable or something else and prints it in the console
-// @param error - The error to check
-// @param instance - The instance to check the error for
-// @param message - The message to display
-function checkError(error: any, instance: PiHoleInstance, message: string) {
-	instance.status = PiHoleInstanceStatus.UNREACHABLE;
-	if (
-		//EHOSTUNREACH
-		error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
-		error.cause?.code === 'EHOSTDOWN' ||
-		error.cause?.code === 'ECONNREFUSED' ||
-		error.message.includes('timeout') ||
-		error.message.includes('UND_ERR_CONNECT_TIMEOUT') ||
-		error.message.includes('EHOSTDOWN') ||
-		error.message.includes('ECONNREFUSED')
-	) {
-		console.error(instance.name, '- Connection timeout or host unreachable');
-	} else {
-		console.error(instance.name, '-', message, error);
+// Get the domains from the reference Pi-hole instance
+// @param instance - The reference instance to get the domains from
+// @returns the domains from the reference
+export async function getDomainsFromReference(instance: PiHoleInstance): Promise<Domain[] | null> {
+	console.log('Getting domains from reference for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/domains`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			}
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed getting domains from reference');
+		}
+		const data = await response.json();
+		return data.domains ? data.domains : null;
+	} catch (error) {
+		checkError(error, instance, 'Error getting domains from reference');
+		return null;
 	}
 }
 
+// Update the domain for the Pi-hole instance
+// @param instance - The instance to update the domain for
+// @param domain - The domain to update
+// @returns true if the domain is updated successfully, false otherwise
+export async function updateDomainForInstance(
+	instance: PiHoleInstance,
+	domain: Domain
+): Promise<boolean> {
+	console.log('Updating domain for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(
+			`${instance.url}/api/domains/${domain.type}/${domain.kind}/${domain.domain}`,
+			{
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+					sid: instance.sid
+				},
+				body: JSON.stringify({
+					type: domain.type,
+					kind: domain.kind,
+					comment: domain.comment,
+					groups: domain.groups,
+					enabled: domain.enabled
+				})
+			}
+		);
+		console.log('The response is:', response);
+		if (response.status !== 200) {
+			throw new Error('Failed updating domain for Pi-hole instance.');
+		}
+		const data = await response.json();
+		return data.processed.errors.length === 0; //TODO: Change this to check if the domain is updated partially
+	} catch (error) {
+		checkError(error, instance, 'Error updating domain');
+		return false;
+	}
+}
+
+// Get the clients from the reference Pi-hole instance
+// @param instance - The reference instance to get the clients from
+// @returns the clients from the reference
 export async function getClientsFromReference(instance: PiHoleInstance): Promise<Client[] | null> {
 	console.log('Getting clients from reference for Pi-hole', instance.name);
 	try {
@@ -348,54 +394,24 @@ export async function updateClientForInstance(
 	}
 }
 
-// 	async pause(): Promise<boolean> {
-// 		try {
-// 			const response = await fetch(`${this.url}/api/disable`, {
-// 				method: 'POST',
-// 				headers: {
-// 					'Content-Type': 'application/json',
-// 					Cookie: `PHPSESSID=${this.sid}`,
-// 					'X-CSRF-TOKEN': this.csrf
-// 				}
-// 			});
-// 			return response.ok;
-// 		} catch (error) {
-// 			console.error('Error pausing PiHole:', error);
-// 			return false;
-// 		}
-// 	}
-
-// 	async resume(): Promise<boolean> {
-// 		try {
-// 			const response = await fetch(`${this.url}/api/enable`, {
-// 				method: 'POST',
-// 				headers: {
-// 					'Content-Type': 'application/json',
-// 					Cookie: `PHPSESSID=${this.sid}`,
-// 					'X-CSRF-TOKEN': this.csrf
-// 				}
-// 			});
-// 			return response.ok;
-// 		} catch (error) {
-// 			console.error('Error resuming PiHole:', error);
-// 			return false;
-// 		}
-// 	}
-
-// 	async updateGravity(): Promise<boolean> {
-// 		try {
-// 			const response = await fetch(`${this.url}/api/gravity/update`, {
-// 				method: 'POST',
-// 				headers: {
-// 					'Content-Type': 'application/json',
-// 					Cookie: `PHPSESSID=${this.sid}`,
-// 					'X-CSRF-TOKEN': this.csrf
-// 				}
-// 			});
-// 			return response.ok;
-// 		} catch (error) {
-// 			console.error('Error updating gravity:', error);
-// 			return false;
-// 		}
-// 	}
-// }
+// Check if the error is a connection timeout or host unreachable or something else and prints it in the console
+// @param error - The error to check
+// @param instance - The instance to check the error for
+// @param message - The message to display
+function checkError(error: any, instance: PiHoleInstance, message: string) {
+	instance.status = PiHoleInstanceStatus.UNREACHABLE;
+	if (
+		//EHOSTUNREACH
+		error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+		error.cause?.code === 'EHOSTDOWN' ||
+		error.cause?.code === 'ECONNREFUSED' ||
+		error.message.includes('timeout') ||
+		error.message.includes('UND_ERR_CONNECT_TIMEOUT') ||
+		error.message.includes('EHOSTDOWN') ||
+		error.message.includes('ECONNREFUSED')
+	) {
+		console.error(instance.name, '- Connection timeout or host unreachable');
+	} else {
+		console.error(instance.name, '-', message, error);
+	}
+}

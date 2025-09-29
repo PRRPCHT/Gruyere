@@ -90,3 +90,26 @@ export type Client = {
 	date_modified: number;
 	name: string | null;
 };
+
+export enum DomainType {
+	ALLOW = 'allow',
+	DENY = 'deny'
+}
+
+export enum DomainKind {
+	EXACT = 'exact',
+	REGEX = 'regex'
+}
+
+export type Domain = {
+	domain: string;
+	unicode: string;
+	type: DomainType;
+	kind: DomainKind;
+	comment: string | null;
+	groups: number[];
+	enabled: boolean;
+	id: number;
+	date_added: number;
+	date_modified: number;
+};
