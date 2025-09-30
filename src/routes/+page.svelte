@@ -4,7 +4,8 @@
 		PiHoleInstanceStatus,
 		type ActionStatus,
 		type PiHoleInstance,
-		type Toast
+		type Toast,
+		type Settings
 	} from '$lib/types/types';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
@@ -15,6 +16,7 @@
 	import { onMount } from 'svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
+	let settings: Settings = $state(data.settings);
 
 	let showAddInstancePanel = $state(false);
 	let newInstanceName = $state('');
@@ -261,9 +263,11 @@
 
 	onMount(() => {
 		refreshInstancesStatus();
-		setInterval(() => {
-			refreshInstancesStatus();
-		}, 10000);
+		if (settings.isRefreshInstance) {
+			setInterval(() => {
+				refreshInstancesStatus();
+			}, settings.instanceRefreshInterval * 1000);
+		}
 	});
 </script>
 

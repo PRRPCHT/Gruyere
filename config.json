@@ -1,3 +1,5 @@
 {
-	"password": "123456"
+  "isRefreshInstance": true,
+  "instanceRefreshInterval": 30,
+  "synchronizeWithReference": "partial"
 }

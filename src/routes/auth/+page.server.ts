@@ -1,6 +1,6 @@
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
-import config from '../../../config.json';
+import currentPassword from '../../../password.json';
 
 export const load: ServerLoad = async ({ cookies }) => {
 	// Check if user is already authenticated
@@ -35,7 +35,7 @@ export const actions: Actions = {
 	login: async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const password = formData.get('password') as string;
-		if (password !== config.password) {
+		if (password !== currentPassword.password) {
 			return fail(401, { error: 'Invalid password' });
 		}
 		const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
