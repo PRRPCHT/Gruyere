@@ -49,31 +49,10 @@
 	let pauseDNSBlockingError = $state(false);
 
 	async function refreshInstances(newInstances: PiHoleInstance[]) {
-		// const result = await fetch('/api/refreshInstances', {
-		// 	method: 'GET'
-		// });
-		// const data = await result.json();
-		// if (data.success) {
-		// 	piHoleInstances = data.instances;
-		// }
 		piHoleInstances = newInstances;
 	}
 
 	async function refreshInstancesStatus() {
-		// let newInstances = [...piHoleInstances];
-		// await Promise.all(
-		// 	newInstances.map(async (instance) => {
-		// 		const result = await fetch('/api/refreshInstanceStatus?id=' + instance.id, {
-		// 			method: 'GET'
-		// 		});
-		// 		const data = await result.json();
-		// 		console.log(instance.name, data.status);
-		// 		if (data.status) {
-		// 			instance.status = data.status;
-		// 		}
-		// 	})
-		// );
-		// console.log(newInstances);
 		const result = await fetch('/api/refreshInstancesStatus', {
 			method: 'GET'
 		});
@@ -163,7 +142,6 @@
 				body: JSON.stringify({ instance })
 			});
 			const data = await result.json();
-			console.log(data);
 			if (data.status) {
 				addToast(data.status);
 			}
@@ -179,7 +157,6 @@
 				body: JSON.stringify({ instance })
 			});
 			const data = await result.json();
-			console.log(data);
 			if (data.status) {
 				addToast(data.status);
 				instance.status = data.status.instanceStatus;
@@ -212,7 +189,6 @@
 			body: JSON.stringify({})
 		});
 		const data = await result.json();
-		console.log(data);
 		if (data.success) {
 			if (data.status) {
 				addToast(data.status);
@@ -231,8 +207,6 @@
 			body: JSON.stringify({})
 		});
 		const data = await result.json();
-
-		console.log(data);
 		if (data.status) {
 			addToast(data.status);
 		}
@@ -250,7 +224,6 @@
 			body: JSON.stringify({})
 		});
 		const data = await result.json();
-		console.log(data);
 		if (data.status) {
 			addToast(data.status);
 		}
@@ -351,7 +324,6 @@
 							result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
 							update: () => Promise<void>;
 						}) => {
-							console.log(result);
 							await update();
 							if (result.type === 'success' && result.data?.success) {
 								piHoleInstances = result.data.instances;
