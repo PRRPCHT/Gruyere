@@ -13,7 +13,7 @@
 	import SuccessToast from '$lib/components/Toast.svelte';
 	import Error from '$lib/components/Error.svelte';
 	import ActionButton from '$lib/components/ActionButton.svelte';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
 	let settings: Settings = $state(data.settings);
@@ -53,15 +53,29 @@
 	}
 
 	async function refreshInstancesStatus() {
-		const result = await fetch('/api/refreshInstancesStatus', {
-			method: 'GET'
-		});
-		const data = await result.json();
-		if (data.success) {
-			piHoleInstances = data.instances;
+		// Prevent multiple simultaneous calls
+		if (isRefreshing) {
+			console.log('Refresh already in progress, skipping...');
+			return;
 		}
-		//piHoleInstances = newInstances;
-		console.log('Refreshed instances status');
+
+		isRefreshing = true;
+		console.log(new Date().toLocaleTimeString(), 'Calling refreshInstancesStatus');
+
+		try {
+			const result = await fetch('/api/refreshInstancesStatus', {
+				method: 'GET'
+			});
+			const data = await result.json();
+			if (data.success) {
+				piHoleInstances = data.instances;
+			}
+			console.log('Refreshed instances status');
+		} catch (error) {
+			console.error('Error refreshing instances status:', error);
+		} finally {
+			isRefreshing = false;
+		}
 	}
 
 	async function resumeDNSBlocking() {
@@ -125,6 +139,30 @@
 	}
 
 	let toasts: Toast[] = $state([]);
+
+	// Polling state management
+	let refreshInterval: NodeJS.Timeout | null = null;
+	let isRefreshing = $state(false);
+
+	function startPolling() {
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
+		}
+
+		if (settings.isRefreshInstance) {
+			refreshInterval = setInterval(() => {
+				console.log('Refreshing instances status');
+				refreshInstancesStatus();
+			}, settings.instanceRefreshInterval * 1000);
+		}
+	}
+
+	function stopPolling() {
+		if (refreshInterval) {
+			clearInterval(refreshInterval);
+			refreshInterval = null;
+		}
+	}
 
 	function addToast(status: ActionStatus) {
 		let id = toasts.length + 1;
@@ -236,11 +274,11 @@
 
 	onMount(() => {
 		refreshInstancesStatus();
-		if (settings.isRefreshInstance) {
-			setInterval(() => {
-				refreshInstancesStatus();
-			}, settings.instanceRefreshInterval * 1000);
-		}
+		startPolling();
+	});
+
+	onDestroy(() => {
+		stopPolling();
 	});
 </script>
 
