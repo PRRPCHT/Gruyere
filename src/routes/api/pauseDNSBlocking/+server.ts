@@ -7,11 +7,15 @@ import {
 } from '$lib/types/types';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import logger from '$lib/utils/logger';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
+	logger.info('Pause DNS blocking request received');
+
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+		logger.warn('Unauthorized access attempt to pause DNS blocking');
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
@@ -20,13 +24,23 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
+
 	let {
 		duration,
 		timeScale,
 		instance
 	}: { duration: number; timeScale: PauseDurationTimeScale; instance: PiHoleInstance } =
 		await request.json();
+
 	if (!duration || duration <= 0 || !timeScale || !instance) {
+		logger.warn(
+			{
+				duration,
+				timeScale,
+				instance: instance?.name
+			},
+			'Invalid pause DNS blocking request parameters'
+		);
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: instance ? instance.name : 'Unknown instance',
@@ -35,7 +49,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: false, status: actionStatus });
 	}
+
 	duration = Math.round(duration);
+	logger.info(`Pausing DNS blocking for instance ${instance.name} for ${duration} ${timeScale}`);
+
 	let success = true;
 	try {
 		const pauseSuccess = await pauseDNSBlocking(instance, durationInSeconds(duration, timeScale));
@@ -48,9 +65,16 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				: 'Failed to pause DNS blocking for ' + duration + ' ' + timeScale,
 			instanceStatus: instance.status
 		};
+
+		if (pauseSuccess) {
+			logger.info(`Successfully paused DNS blocking for ${instance.name}`);
+		} else {
+			logger.warn(`Failed to pause DNS blocking for ${instance.name}`);
+		}
+
 		return json({ success, status: actionStatus });
 	} catch (error) {
-		console.error('Error pausing DNS blocking:', error);
+		logger.error({ error, instance: instance.name }, 'Error pausing DNS blocking');
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,

@@ -10,6 +10,7 @@ import { getSettings } from '$lib/models/settings';
 import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
+import logger from '$lib/utils/logger';
 
 export const load: ServerLoad = async ({ cookies }) => {
 	// Check authentication
@@ -25,7 +26,7 @@ export const load: ServerLoad = async ({ cookies }) => {
 				cookies.delete('auth_session', { path: '/' });
 			}
 		} catch (error) {
-			console.error('Invalid session cookie:', error);
+			logger.error({ error }, 'Invalid session cookie');
 			cookies.delete('auth_session', { path: '/' });
 		}
 	}
@@ -83,7 +84,7 @@ export const actions: Actions = {
 				instances: instances
 			};
 		} catch (error) {
-			console.error('Error adding PiHole instance:', error);
+			logger.error({ error, formData: theForm }, 'Error adding PiHole instance');
 			return fail(500, theForm);
 		}
 	},
@@ -112,7 +113,7 @@ export const actions: Actions = {
 				instances: newInstances
 			};
 		} catch (error) {
-			console.error('Error deleting Pi-hole instance:', error);
+			logger.error({ error, formData: theForm }, 'Error managing Pi-hole instance');
 			return fail(500, theForm);
 		}
 	},
@@ -135,7 +136,7 @@ export const actions: Actions = {
 				instances: newInstances
 			};
 		} catch (error) {
-			console.error('Error deleting Pi-hole instance:', error);
+			logger.error({ error, formData: theForm }, 'Error managing Pi-hole instance');
 			return fail(500, theForm);
 		}
 	}

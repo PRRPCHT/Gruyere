@@ -14,6 +14,7 @@ import {
 	updateListForInstance
 } from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
+import logger from '$lib/utils/logger';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	// Check authentication
@@ -27,7 +28,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
-	console.log('Updating lists from reference');
+	logger.info('Updating lists from reference');
 	const instances = await getPiHoleInstances();
 	const reference = instances.find((instance) => instance.isReference);
 	if (!reference) {
@@ -62,7 +63,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: true, status: actionStatus, statuses: null });
 	} catch (error) {
-		console.error('Error getting the lists from the reference:', error);
+		logger.error(
+			{ error, reference: reference.name },
+			'Error getting the lists from the reference'
+		);
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: reference.name,
@@ -81,7 +85,7 @@ async function updateListsForInstance(
 	instance: PiHoleInstance,
 	listsFromReference: List[]
 ): Promise<ActionStatus> {
-	console.log('Updating lists for instance', instance.name);
+	logger.debug({ instance: instance.name }, 'Updating lists for instance');
 	try {
 		let updateSuccess = true;
 		const status = instance.status;
@@ -105,7 +109,7 @@ async function updateListsForInstance(
 		};
 		return actionStatus;
 	} catch (error) {
-		console.error('Error updating lists:', error);
+		logger.error({ error, instance: instance.name }, 'Error updating lists');
 		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,

@@ -8,6 +8,7 @@ import {
 } from '$lib/types/types';
 import { getGroupsFromReference, updateGroupForInstance } from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
+import logger from '$lib/utils/logger';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	// Check authentication
@@ -21,7 +22,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
-	console.log('Updating groups from reference');
+	logger.info('Updating groups from reference');
 	const instances = await getPiHoleInstances();
 	const reference = instances.find((instance) => instance.isReference);
 	if (!reference) {
@@ -41,7 +42,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
 					const actionStatus = await updateGroupsForInstance(instance, groupsFromReference);
-					console.log('The action status is:', actionStatus);
+					logger.debug({ actionStatus, instance: instance.name }, 'Group update action status');
 					statuses.push(actionStatus);
 					return actionStatus;
 				}
@@ -57,7 +58,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: true, status: actionStatus, statuses: null });
 	} catch (error) {
-		console.error('Error getting the groups from the reference:', error);
+		logger.error(
+			{ error, reference: reference.name },
+			'Error getting the groups from the reference'
+		);
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: reference.name,
@@ -76,7 +80,7 @@ async function updateGroupsForInstance(
 	instance: PiHoleInstance,
 	groupsFromReference: Group[]
 ): Promise<ActionStatus> {
-	console.log('Updating groups for instance', instance.name);
+	logger.debug({ instance: instance.name }, 'Updating groups for instance');
 	try {
 		let updateSuccess = true;
 		const status = instance.status;
@@ -100,7 +104,7 @@ async function updateGroupsForInstance(
 		};
 		return actionStatus;
 	} catch (error) {
-		console.error('Error updating groups:', error);
+		logger.error({ error, instance: instance.name }, 'Error updating groups');
 		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
