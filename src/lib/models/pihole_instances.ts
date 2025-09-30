@@ -91,7 +91,6 @@ export async function editPiHoleInstance(
 				}
 			}
 		}
-		console.log(preInstance);
 		await savePiHoleInstances(newInstances);
 		return newInstances;
 	} catch (error) {

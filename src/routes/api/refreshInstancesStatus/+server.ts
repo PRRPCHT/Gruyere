@@ -9,12 +9,18 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
 	}
 	const instances = await getPiHoleInstances();
+	const newInstances = [...instances];
 	await Promise.all(
-		instances.map(async (instance) => {
+		newInstances.map(async (instance) => {
 			const status = await checkAuthentication(instance);
-			instance.status = status;
+			newInstances.find((newInstance) => newInstance.id === instance.id)!.status = status;
 		})
 	);
-	await savePiHoleInstances(instances);
-	return json({ success: true, instances: instances });
+	// Only save if instances and newInstances are not identical
+	const instancesString = JSON.stringify(instances);
+	const newInstancesString = JSON.stringify(newInstances);
+	if (instancesString !== newInstancesString) {
+		await savePiHoleInstances(newInstances);
+	}
+	return json({ success: true, instances: newInstances });
 };
