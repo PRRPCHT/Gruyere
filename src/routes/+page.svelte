@@ -271,245 +271,256 @@
 	});
 </script>
 
-<section class="flex flex-col gap-8">
-	<div class="flex flex-col gap-4">
-		<h2 class="text-2xl">Pi-hole Instances</h2>
-		<div class="verflow-x-auto">
-			<table class="table">
-				<!-- head -->
-				<thead>
+<section class="flex flex-col gap-4">
+	<h2 class="text-2xl">Pi-hole Instances</h2>
+	<div class="verflow-x-auto">
+		<table class="table">
+			<!-- head -->
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>URL</th>
+					<th>Is Reference</th>
+					<th>Status</th>
+					<th> </th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each piHoleInstances as piHoleInstance}
 					<tr>
-						<th>Name</th>
-						<th>URL</th>
-						<th>Is Reference</th>
-						<th>Status</th>
-						<th> </th>
+						<td>{piHoleInstance.name}</td>
+						<td
+							><a
+								href={piHoleInstance.url + '/admin'}
+								target="_blank"
+								class="link no-underline hover:text-secondary">{piHoleInstance.url}</a
+							></td
+						>
+						<td
+							>{#if piHoleInstance.isReference}<div class="badge badge-soft badge-success">
+									Reference
+								</div>{/if}</td
+						>
+						<td
+							>{#if piHoleInstance.status === PiHoleInstanceStatus.ACTIVE}
+								<div class="badge badge-soft badge-success">Active</div>
+							{:else if piHoleInstance.status === PiHoleInstanceStatus.UNAUTHORIZED}
+								<div class="badge badge-soft badge-error">Unauthorized</div>
+							{:else if piHoleInstance.status === PiHoleInstanceStatus.UNREACHABLE}
+								<div class="badge badge-soft badge-error">Not active</div>
+							{:else}
+								<div class="badge badge-soft">Refreshing</div>
+							{/if}
+						</td>
+						<td class="flex flex-row justify-end">
+							<button
+								class="btn bg-gray-700 btn-sm hover:bg-primary"
+								onclick={() => showEditModal(piHoleInstance.id)}
+							>
+								Edit
+							</button></td
+						>
 					</tr>
-				</thead>
-				<tbody>
-					{#each piHoleInstances as piHoleInstance}
-						<tr>
-							<td>{piHoleInstance.name}</td>
-							<td
-								><a
-									href={piHoleInstance.url + '/admin'}
-									target="_blank"
-									class="link no-underline hover:text-secondary">{piHoleInstance.url}</a
-								></td
-							>
-							<td
-								>{#if piHoleInstance.isReference}<div class="badge badge-soft badge-success">
-										Reference
-									</div>{/if}</td
-							>
-							<td
-								>{#if piHoleInstance.status === PiHoleInstanceStatus.ACTIVE}
-									<div class="badge badge-soft badge-success">Active</div>
-								{:else if piHoleInstance.status === PiHoleInstanceStatus.UNAUTHORIZED}
-									<div class="badge badge-soft badge-error">Unauthorized</div>
-								{:else if piHoleInstance.status === PiHoleInstanceStatus.UNREACHABLE}
-									<div class="badge badge-soft badge-error">Not active</div>
-								{:else}
-									<div class="badge badge-soft">Refreshing</div>
-								{/if}
-							</td>
-							<td class="flex flex-row justify-end">
-								<button
-									class="btn bg-gray-700 btn-sm hover:bg-primary"
-									onclick={() => showEditModal(piHoleInstance.id)}
-								>
-									Edit
-								</button></td
-							>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-			<div class="m-4 flex flex-row justify-end gap-2">
-				<div class="tooltip" data-tip="Add a new Pi-hole instance">
-					<button
-						class="btn bg-gray-700 btn-sm hover:bg-primary"
-						onclick={() => (showAddInstancePanel = !showAddInstancePanel)}
-					>
-						+
-					</button>
-				</div>
+				{/each}
+			</tbody>
+		</table>
+		<div class="m-4 flex flex-row justify-end gap-2">
+			<div class="tooltip tooltip-left" data-tip="Add a new Pi-hole instance">
+				<button
+					class="btn bg-gray-700 btn-sm hover:bg-primary"
+					onclick={() => (showAddInstancePanel = !showAddInstancePanel)}
+				>
+					+
+				</button>
 			</div>
 		</div>
-		{#if showEditInstancePanel}
-			<dialog id="edit_pihole_instance_modal" class="modal-open modal">
-				<div class="modal-box flex flex-col gap-4">
-					<h3 class="text-lg font-bold">Edit Pi-hole instance</h3>
-					<form
-						class="flex flex-col gap-2"
-						method="post"
-						action="?/editPiHoleInstance"
-						use:enhance={({ formElement, formData, action, cancel }) => {
-							return async ({
-								result,
-								update
-							}: {
-								result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
-								update: () => Promise<void>;
-							}) => {
-								console.log(result);
-								await update();
-								if (result.type === 'success' && result.data?.success) {
-									piHoleInstances = result.data.instances;
-									showEditInstancePanel = false;
-									editInstanceName = '';
-									editInstanceUrl = '';
-									editInstanceApiKey = '';
-									editIsReference = false;
-								}
-							};
-						}}
-					>
-						<input type="hidden" name="id" value={editInstanceId} />
-						{#if form?.missingName}
-							<Error message="The name field is required." />
-						{/if}
-						{#if form?.missingUrl}
-							<Error message="The URL field is required." />
-						{/if}
-						{#if form?.missingApiKey}
-							<Error message="The API key field is required." />
-						{/if}
-						<div class="flex flex-col gap-2" class:text-error={form?.missingName}>
-							<label class="label">Instance name</label>
-							<input
-								type="text"
-								class="input w-full"
-								bind:value={editInstanceName}
-								name="name"
-								class:border-error={form?.missingName}
-							/>
+	</div>
+	{#if showEditInstancePanel}
+		<dialog id="edit_pihole_instance_modal" class="modal-open modal">
+			<div class="modal-box flex flex-col gap-4">
+				<h3 class="text-lg font-bold">Edit Pi-hole instance</h3>
+				<form
+					class="flex flex-col gap-2"
+					method="post"
+					action="?/editPiHoleInstance"
+					use:enhance={({ formElement, formData, action, cancel }) => {
+						return async ({
+							result,
+							update
+						}: {
+							result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
+							update: () => Promise<void>;
+						}) => {
+							console.log(result);
+							await update();
+							if (result.type === 'success' && result.data?.success) {
+								piHoleInstances = result.data.instances;
+								showEditInstancePanel = false;
+								editInstanceName = '';
+								editInstanceUrl = '';
+								editInstanceApiKey = '';
+								editIsReference = false;
+							}
+						};
+					}}
+				>
+					<input type="hidden" name="id" value={editInstanceId} />
+					{#if form?.missingName}
+						<Error message="The name field is required." />
+					{/if}
+					{#if form?.missingUrl}
+						<Error message="The URL field is required." />
+					{/if}
+					{#if form?.missingApiKey}
+						<Error message="The API key field is required." />
+					{/if}
+					<div class="flex flex-col gap-2" class:text-error={form?.missingName}>
+						<label class="label" for="instanceName">Instance name</label>
+						<input
+							type="text"
+							class="input w-full"
+							bind:value={editInstanceName}
+							name="name"
+							id="instanceName"
+							class:border-error={form?.missingName}
+						/>
+					</div>
+					<div class="flex flex-col gap-2" class:text-error={form?.missingUrl}>
+						<label class="label" for="instanceUrl">Instance URL</label>
+						<input
+							type="text"
+							class="input w-full"
+							bind:value={editInstanceUrl}
+							name="url"
+							id="instanceUrl"
+							class:border-error={form?.missingUrl}
+						/>
+					</div>
+					<div class="flex flex-col gap-2" class:text-error={form?.missingApiKey}>
+						<label class="label" for="instanceApiKey">API Key</label>
+						<input
+							type="text"
+							class="input w-full"
+							bind:value={editInstanceApiKey}
+							name="apiKey"
+							id="instanceApiKey"
+							class:border-error={form?.missingApiKey}
+						/>
+					</div>
+					{#if piHoleInstances.length > 1}
+						<div class="flex flex-col gap-2">
+							<label class="label" for="isReference">Is Reference</label>
+							<select
+								class="select w-full"
+								bind:value={editIsReference}
+								name="isReference"
+								id="isReference"
+							>
+								<option value={true}>True</option>
+								<option value={false}>False</option>
+							</select>
 						</div>
-						<div class="flex flex-col gap-2" class:text-error={form?.missingUrl}>
-							<label class="label">Instance URL</label>
-							<input
-								type="text"
-								class="input w-full"
-								bind:value={editInstanceUrl}
-								name="url"
-								class:border-error={form?.missingUrl}
-							/>
-						</div>
-						<div class="flex flex-col gap-2" class:text-error={form?.missingApiKey}>
-							<label class="label">API Key</label>
-							<input
-								type="text"
-								class="input w-full"
-								bind:value={editInstanceApiKey}
-								name="apiKey"
-								class:border-error={form?.missingApiKey}
-							/>
-						</div>
-						{#if piHoleInstances.length > 1}
-							<div class="flex flex-col gap-2">
-								<label class="label">Is Reference</label>
-								<select class="select w-full" bind:value={editIsReference} name="isReference">
-									<option value={true}>True</option>
-									<option value={false}>False</option>
-								</select>
-							</div>
-						{:else}
-							<input type="hidden" name="isReference" bind:value={editIsReference} />
-						{/if}
-						<div class="mt-3 flex w-full flex-row justify-between">
-							<div>
-								<button class="btn btn-ghost" onclick={() => (showEditInstancePanel = false)}
-									>Cancel</button
-								>
-								<button class="btn btn-error" formaction="?/deletePiHoleInstance">Delete</button>
-							</div>
-
-							<button class="btn btn-primary" type="submit"> Save </button>
-						</div>
-					</form>
-				</div>
-			</dialog>
-		{/if}
-		{#if showAddInstancePanel}
-			<dialog id="add_pihole_instance_modal" class="modal-open modal">
-				<div class="modal-box flex flex-col gap-4">
-					<h3 class="text-lg font-bold">Add a new Pi-hole instance</h3>
-					<form
-						class="flex flex-col gap-2"
-						method="post"
-						action="?/addPiHoleInstance"
-						use:enhance={({ formElement, formData, action, cancel }) => {
-							return async ({
-								result,
-								update
-							}: {
-								result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
-								update: () => Promise<void>;
-							}) => {
-								await update();
-								if (result.type === 'success' && result.data?.success) {
-									piHoleInstances = result.data.instances;
-									showAddInstancePanel = false;
-									newInstanceName = '';
-									newInstanceUrl = '';
-									newInstanceApiKey = '';
-								}
-							};
-						}}
-					>
-						{#if form?.missingName}
-							<Error message="The name field is required." />
-						{/if}
-						{#if form?.missingUrl}
-							<Error message="The URL field is required." />
-						{/if}
-						{#if form?.missingApiKey}
-							<Error message="The API key field is required." />
-						{/if}
-						<div class:text-error={form?.missingName}>
-							<label class="label">Instance name</label>
-							<input
-								type="text"
-								class="input w-full"
-								placeholder="Instance name"
-								bind:value={newInstanceName}
-								name="name"
-								class:border-error={form?.missingName}
-							/>
-						</div>
-						<div class:text-error={form?.missingUrl}>
-							<label class="label">Instance URL</label>
-							<input
-								type="text"
-								class="input w-full"
-								placeholder="https://pihole.example.com:port"
-								bind:value={newInstanceUrl}
-								name="url"
-								class:border-error={form?.missingUrl}
-							/>
-						</div>
-						<div class:text-error={form?.missingApiKey}>
-							<label class="label">API Key</label>
-							<input
-								type="text"
-								class="input w-full"
-								placeholder="1234567890"
-								bind:value={newInstanceApiKey}
-								name="apiKey"
-								class:border-error={form?.missingApiKey}
-							/>
-						</div>
-						<div class="mt-3 flex w-full flex-row justify-between">
-							<button class="btn btn-ghost" onclick={() => (showAddInstancePanel = false)}
+					{:else}
+						<input type="hidden" name="isReference" bind:value={editIsReference} />
+					{/if}
+					<div class="mt-3 flex w-full flex-row justify-between">
+						<div>
+							<button class="btn btn-ghost" onclick={() => (showEditInstancePanel = false)}
 								>Cancel</button
 							>
-							<button class="btn btn-primary" type="submit"> Add </button>
+							<button class="btn btn-error" formaction="?/deletePiHoleInstance">Delete</button>
 						</div>
-					</form>
-				</div>
-			</dialog>
-		{/if}
-	</div>
+
+						<button class="btn btn-primary" type="submit"> Save </button>
+					</div>
+				</form>
+			</div>
+		</dialog>
+	{/if}
+	{#if showAddInstancePanel}
+		<dialog id="add_pihole_instance_modal" class="modal-open modal">
+			<div class="modal-box flex flex-col gap-4">
+				<h3 class="text-lg font-bold">Add a new Pi-hole instance</h3>
+				<form
+					class="flex flex-col gap-2"
+					method="post"
+					action="?/addPiHoleInstance"
+					use:enhance={({ formElement, formData, action, cancel }) => {
+						return async ({
+							result,
+							update
+						}: {
+							result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
+							update: () => Promise<void>;
+						}) => {
+							await update();
+							if (result.type === 'success' && result.data?.success) {
+								piHoleInstances = result.data.instances;
+								showAddInstancePanel = false;
+								newInstanceName = '';
+								newInstanceUrl = '';
+								newInstanceApiKey = '';
+							}
+						};
+					}}
+				>
+					{#if form?.missingName}
+						<Error message="The name field is required." />
+					{/if}
+					{#if form?.missingUrl}
+						<Error message="The URL field is required." />
+					{/if}
+					{#if form?.missingApiKey}
+						<Error message="The API key field is required." />
+					{/if}
+					<div class:text-error={form?.missingName}>
+						<label class="label" for="instanceName">Instance name</label>
+						<input
+							type="text"
+							class="input w-full"
+							placeholder="Instance name"
+							bind:value={newInstanceName}
+							name="name"
+							id="instanceName"
+							class:border-error={form?.missingName}
+						/>
+					</div>
+					<div class:text-error={form?.missingUrl}>
+						<label class="label" for="instanceUrl">Instance URL</label>
+						<input
+							type="text"
+							class="input w-full"
+							placeholder="https://pihole.example.com:port"
+							bind:value={newInstanceUrl}
+							name="url"
+							id="instanceUrl"
+							class:border-error={form?.missingUrl}
+						/>
+					</div>
+					<div class:text-error={form?.missingApiKey}>
+						<label class="label" for="instanceApiKey">API Key</label>
+						<input
+							type="text"
+							class="input w-full"
+							placeholder="1234567890"
+							bind:value={newInstanceApiKey}
+							name="apiKey"
+							id="instanceApiKey"
+							class:border-error={form?.missingApiKey}
+						/>
+					</div>
+					<div class="mt-3 flex w-full flex-row justify-between">
+						<button class="btn btn-ghost" onclick={() => (showAddInstancePanel = false)}
+							>Cancel</button
+						>
+						<button class="btn btn-primary" type="submit"> Add </button>
+					</div>
+				</form>
+			</div>
+		</dialog>
+	{/if}
+</section>
+<section class="flex flex-col gap-4">
 	<div class="flex flex-col gap-8">
 		<div class="flex flex-col gap-4">
 			<h2 class="text-2xl">DNS Blocking - All instances</h2>
@@ -566,18 +577,24 @@
 					<Error message="The time scale field is required." />
 				{/if}
 				<div class="flex flex-col gap-2" class:text-error={pauseDNSBlockingError}>
-					<label class="label">Duration</label>
+					<label class="label" for="duration">Duration</label>
 					<input
 						type="number"
 						class="input w-full"
 						bind:value={pauseDNSBlockingDuration}
 						name="duration"
+						id="duration"
 						class:border-error={pauseDNSBlockingError}
 					/>
 				</div>
 				<div class="flex flex-col gap-2" class:text-error={form?.missingTimeScale}>
-					<label class="label">Time scale</label>
-					<select class="select w-full" bind:value={pauseDNSBlockingTimeScale} name="timeScale">
+					<label class="label" for="timeScale">Time scale</label>
+					<select
+						class="select w-full"
+						bind:value={pauseDNSBlockingTimeScale}
+						name="timeScale"
+						id="timeScale"
+					>
 						{#each Object.values(PauseDurationTimeScale) as timeScale}
 							<option value={timeScale}>{timeScale}</option>
 						{/each}
@@ -594,6 +611,8 @@
 			</div>
 		</dialog>
 	{/if}
+</section>
+<section class="flex flex-col gap-4">
 	<div class="toast flex flex-col gap-2">
 		{#each toasts as toast}
 			<SuccessToast status={toast.status} />
