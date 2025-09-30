@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import { updateGravity } from '$lib/clients/pihole_client';
+import logger from '$lib/utils/logger';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	// Check authentication
@@ -35,7 +36,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: updateSuccess, status: actionStatus });
 	} catch (error) {
-		console.error('Error updating gravities:', error);
+		logger.error('Error updating gravities', { error, instance: instance.name });
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,

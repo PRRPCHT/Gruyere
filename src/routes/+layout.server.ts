@@ -1,4 +1,5 @@
 import type { LayoutServerLoad } from './$types';
+import logger from '$lib/utils/logger';
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	// Check for authentication session
@@ -15,7 +16,7 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 				cookies.delete('auth_session', { path: '/' });
 			}
 		} catch (error) {
-			console.error('Invalid session cookie:', error);
+			logger.error({ error }, 'Invalid session cookie');
 			cookies.delete('auth_session', { path: '/' });
 		}
 	}
