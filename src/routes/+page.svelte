@@ -244,7 +244,7 @@
 	});
 </script>
 
-<section class="flex flex-col gap-4">
+<section class="mb-4 flex flex-col gap-4">
 	<h2 class="text-2xl">Pi-hole Instances</h2>
 	<div class="verflow-x-auto">
 		<table class="table w-full overflow-x-auto">
@@ -492,47 +492,45 @@
 		</dialog>
 	{/if}
 </section>
-<section class="flex flex-col gap-4">
-	<div class="flex flex-col gap-8">
-		<div class="flex flex-col gap-4">
-			<h2 class="text-2xl">DNS Blocking - All instances</h2>
-			<div class="flex flex-row flex-wrap gap-2">
-				<ActionButton
-					label="Indefinitely"
-					onClick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}
-				/>
-				<ActionButton
-					label="For 10 seconds"
-					onClick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}
-				/>
-				<ActionButton
-					label="For 30 seconds"
-					onClick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}
-				/>
-				<ActionButton
-					label="For 5 minutes"
-					onClick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}
-				/>
-				<ActionButton label="Custom time" onClick={() => showPauseDNSBlockingModal()} />
-				<ActionButton label="Resume Blocking" onClick={() => resumeDNSBlocking()} />
-			</div>
+<section class="flex flex-col gap-12">
+	<div class="flex flex-col gap-4">
+		<h2 class="text-2xl">DNS Blocking - All instances</h2>
+		<div class="flex flex-row flex-wrap gap-2">
+			<ActionButton
+				label="Indefinitely"
+				onClick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}
+			/>
+			<ActionButton
+				label="For 10 seconds"
+				onClick={() => pauseDNSBlocking(10, PauseDurationTimeScale.SECONDS)}
+			/>
+			<ActionButton
+				label="For 30 seconds"
+				onClick={() => pauseDNSBlocking(30, PauseDurationTimeScale.SECONDS)}
+			/>
+			<ActionButton
+				label="For 5 minutes"
+				onClick={() => pauseDNSBlocking(5, PauseDurationTimeScale.MINUTES)}
+			/>
+			<ActionButton label="Custom time" onClick={() => showPauseDNSBlockingModal()} />
+			<ActionButton label="Resume Blocking" onClick={() => resumeDNSBlocking()} />
 		</div>
+	</div>
 
-		<div class="flex flex-col gap-4">
-			<h3 class="text-2xl">Actions - All instances</h3>
-			<div class="flex flex-row flex-wrap gap-2">
-				<ActionButton label="Update all Gravities" onClick={() => updateGravities()} />
-				<ActionButton label="Restart all DNS" onClick={() => restartDNS()} />
-			</div>
+	<div class="flex flex-col gap-4">
+		<h3 class="text-2xl">Actions - All instances</h3>
+		<div class="flex flex-row flex-wrap gap-2">
+			<ActionButton label="Update all Gravities" onClick={() => updateGravities()} />
+			<ActionButton label="Restart all DNS" onClick={() => restartDNS()} />
 		</div>
-		<div class="flex flex-col gap-4">
-			<h3 class="text-2xl">Actions - From Reference</h3>
-			<div class="flex flex-row flex-wrap gap-2">
-				<ActionButton label="Update groups" onClick={() => updateGroupsFromReference()} />
-				<ActionButton label="Update lists" onClick={() => updateListsFromReference()} />
-				<ActionButton label="Update clients" onClick={() => updateClientsFromReference()} />
-				<ActionButton label="Update domains" onClick={() => updateDomainsFromReference()} />
-			</div>
+	</div>
+	<div class="flex flex-col gap-4">
+		<h3 class="text-2xl">Actions - From Reference</h3>
+		<div class="flex flex-row flex-wrap gap-2">
+			<ActionButton label="Update groups" onClick={() => updateGroupsFromReference()} />
+			<ActionButton label="Update lists" onClick={() => updateListsFromReference()} />
+			<ActionButton label="Update clients" onClick={() => updateClientsFromReference()} />
+			<ActionButton label="Update domains" onClick={() => updateDomainsFromReference()} />
 		</div>
 	</div>
 	{#if showPauseDNSBlockingPanel}

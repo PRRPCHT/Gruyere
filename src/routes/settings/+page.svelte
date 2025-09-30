@@ -45,10 +45,10 @@
 	}
 </script>
 
-<section class="flex flex-col gap-2">
+<section class="mb-16 flex flex-col gap-2">
 	<h1 class="text-2xl">Settings</h1>
 	<form
-		class="flex flex-col gap-4"
+		class="space-between flex w-full flex-col gap-4 md:flex-row"
 		method="POST"
 		action="?/changeSettings"
 		use:enhance={({ formElement, formData, action, cancel }) => {
@@ -71,76 +71,78 @@
 			};
 		}}
 	>
-		{#if form?.missingInstanceRefreshInterval}
-			<Error message="The instance refresh interval field is required." />
-		{/if}
-		{#if form?.invalidInstanceRefreshInterval}
-			<Error
-				message="The instance refresh interval field is invalid. Must be a positive integer."
-			/>
-		{/if}
-		{#if form?.missingSynchronizeWithReference}
-			<Error message="The synchronize with reference field is required." />
-		{/if}
-		<div class="flex flex-row gap-2">
-			<label for="instanceRefresh" class="label">Automatic instances refresh: </label>
-			<input
-				type="checkbox"
-				class="checkbox bg-base-100 checkbox-primary"
-				bind:checked={instanceRefresh}
-				name="isRefreshInstance"
-			/>
-		</div>
-		<div class="flex flex-row gap-2">
-			<label for="instanceRefreshInterval" class="label"
-				>Instance refresh interval (seconds):
-			</label>
-			<input
-				type="number"
-				class="input w-24"
-				class:border-error={form?.missingInstanceRefreshInterval ||
-					form?.invalidInstanceRefreshInterval}
-				class:text-error={form?.missingInstanceRefreshInterval ||
-					form?.invalidInstanceRefreshInterval}
-				bind:value={instanceRefreshInterval}
-				id="instanceRefreshInterval"
-				name="instanceRefreshInterval"
-				disabled={!instanceRefresh}
-			/>
-		</div>
-		<div class="flex flex-col items-start gap-4 md:flex-row">
-			<label for="sync" class="label">Synchronize with reference: </label>
-			<div class="flex flex-col gap-2">
-				<div id="sync" class="no-wrap flex flex-row gap-2">
-					<input
-						type="radio"
-						class="radio bg-base-100 radio-primary"
-						bind:group={synchronizeWithReference}
-						id="synchronizeWithReference"
-						name="synchronizeWithReference"
-						value={SynchronizationMode.PARTIAL}
-						checked={synchronizeWithReference === SynchronizationMode.PARTIAL}
-						class:border-error={form?.missingSynchronizeWithReference}
-						class:text-error={form?.missingSynchronizeWithReference}
-					/>
-					<label for="synchronizeWithReference" class="label">Only add/update </label>
-				</div>
+		<div class="flex flex-1 flex-col gap-4">
+			{#if form?.missingInstanceRefreshInterval}
+				<Error message="The instance refresh interval field is required." />
+			{/if}
+			{#if form?.invalidInstanceRefreshInterval}
+				<Error
+					message="The instance refresh interval field is invalid. Must be a positive integer."
+				/>
+			{/if}
+			{#if form?.missingSynchronizeWithReference}
+				<Error message="The synchronize with reference field is required." />
+			{/if}
+			<div class="flex flex-row gap-2">
+				<label for="instanceRefresh" class="label">Automatic instances refresh: </label>
+				<input
+					type="checkbox"
+					class="checkbox bg-base-100 checkbox-primary"
+					bind:checked={instanceRefresh}
+					name="isRefreshInstance"
+				/>
+			</div>
+			<div class="flex flex-row gap-2">
+				<label for="instanceRefreshInterval" class="label"
+					>Instance refresh interval (seconds):
+				</label>
+				<input
+					type="number"
+					class="input w-24"
+					class:border-error={form?.missingInstanceRefreshInterval ||
+						form?.invalidInstanceRefreshInterval}
+					class:text-error={form?.missingInstanceRefreshInterval ||
+						form?.invalidInstanceRefreshInterval}
+					bind:value={instanceRefreshInterval}
+					id="instanceRefreshInterval"
+					name="instanceRefreshInterval"
+					disabled={!instanceRefresh}
+				/>
+			</div>
+			<div class="flex flex-col items-start gap-4 md:flex-row">
+				<label for="sync" class="label">Synchronize with reference: </label>
+				<div class="flex flex-col gap-2">
+					<div id="sync" class="no-wrap flex flex-row gap-2">
+						<input
+							type="radio"
+							class="radio bg-base-100 radio-primary"
+							bind:group={synchronizeWithReference}
+							id="synchronizeWithReference"
+							name="synchronizeWithReference"
+							value={SynchronizationMode.PARTIAL}
+							checked={synchronizeWithReference === SynchronizationMode.PARTIAL}
+							class:border-error={form?.missingSynchronizeWithReference}
+							class:text-error={form?.missingSynchronizeWithReference}
+						/>
+						<label for="synchronizeWithReference" class="label">Only add/update </label>
+					</div>
 
-				<div class="no-wrap flex flex-row gap-2">
-					<input
-						type="radio"
-						class="radio bg-base-100 radio-primary"
-						bind:group={synchronizeWithReference}
-						id="synchronizeWithReference"
-						name="synchronizeWithReference"
-						value={SynchronizationMode.COMPLETE}
-						checked={synchronizeWithReference === SynchronizationMode.COMPLETE}
-					/>
-					<label for="synchronizeWithReference" class="label">Complete synchronization </label>
+					<div class="no-wrap flex flex-row gap-2">
+						<input
+							type="radio"
+							class="radio bg-base-100 radio-primary"
+							bind:group={synchronizeWithReference}
+							id="synchronizeWithReference"
+							name="synchronizeWithReference"
+							value={SynchronizationMode.COMPLETE}
+							checked={synchronizeWithReference === SynchronizationMode.COMPLETE}
+						/>
+						<label for="synchronizeWithReference" class="label">Complete synchronization </label>
+					</div>
 				</div>
 			</div>
 		</div>
-		<button class="btn mx-auto w-32 btn-primary" type="submit">Save</button>
+		<div><button class="btn mx-auto w-full btn-primary md:w-32" type="submit">Save</button></div>
 	</form>
 </section>
 <section class="flex flex-col gap-4">
