@@ -4,8 +4,7 @@
 		label,
 		class: className
 	}: { onClick: () => void; label: string; class?: string } = $props();
-
-	let defaultClass = 'btn btn-outline btn-primary';
+	let defaultClass = 'btn w-52 bg-gray-700 hover:bg-primary';
 	let classes = defaultClass + ' ' + className;
 </script>
 

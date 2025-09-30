@@ -315,7 +315,7 @@
 							</td>
 							<td class="flex flex-row justify-end">
 								<button
-									class="btn btn-ghost btn-soft btn-sm"
+									class="btn bg-gray-700 btn-sm hover:bg-primary"
 									onclick={() => showEditModal(piHoleInstance.id)}
 								>
 									Edit
@@ -325,13 +325,15 @@
 					{/each}
 				</tbody>
 			</table>
-			<div class="mt-4 flex flex-row justify-center gap-2">
-				<button
-					class="btn btn-soft btn-primary"
-					onclick={() => (showAddInstancePanel = !showAddInstancePanel)}
-				>
-					Add Pi-hole instance
-				</button>
+			<div class="m-4 flex flex-row justify-end gap-2">
+				<div class="tooltip" data-tip="Add a new Pi-hole instance">
+					<button
+						class="btn bg-gray-700 btn-sm hover:bg-primary"
+						onclick={() => (showAddInstancePanel = !showAddInstancePanel)}
+					>
+						+
+					</button>
+				</div>
 			</div>
 		</div>
 		{#if showEditInstancePanel}
@@ -416,14 +418,13 @@
 						{/if}
 						<div class="mt-3 flex w-full flex-row justify-between">
 							<div>
-								<button
-									class="btn btn-ghost btn-soft"
-									onclick={() => (showEditInstancePanel = false)}>Cancel</button
+								<button class="btn btn-ghost" onclick={() => (showEditInstancePanel = false)}
+									>Cancel</button
 								>
 								<button class="btn btn-error" formaction="?/deletePiHoleInstance">Delete</button>
 							</div>
 
-							<button class="btn btn-primary" type="submit"> Edit </button>
+							<button class="btn btn-primary" type="submit"> Save </button>
 						</div>
 					</form>
 				</div>
@@ -499,7 +500,7 @@
 							/>
 						</div>
 						<div class="mt-3 flex w-full flex-row justify-between">
-							<button class="btn btn-ghost btn-soft" onclick={() => (showAddInstancePanel = false)}
+							<button class="btn btn-ghost" onclick={() => (showAddInstancePanel = false)}
 								>Cancel</button
 							>
 							<button class="btn btn-primary" type="submit"> Add </button>
@@ -511,7 +512,7 @@
 	</div>
 	<div class="flex flex-col gap-8">
 		<div class="flex flex-col gap-4">
-			<h2 class="text-2xl">DNS Blocking</h2>
+			<h2 class="text-2xl">DNS Blocking - All instances</h2>
 			<div class="flex flex-row flex-wrap gap-2">
 				<ActionButton
 					label="Indefinitely"
@@ -535,31 +536,19 @@
 		</div>
 
 		<div class="flex flex-col gap-4">
-			<h3 class="text-xl">All instances</h3>
+			<h3 class="text-2xl">Actions - All instances</h3>
 			<div class="flex flex-row flex-wrap gap-2">
-				<ActionButton label="Update Gravities" onClick={() => updateGravities()} />
-				<ActionButton label="Restart DNS" onClick={() => restartDNS()} />
+				<ActionButton label="Update all Gravities" onClick={() => updateGravities()} />
+				<ActionButton label="Restart all DNS" onClick={() => restartDNS()} />
 			</div>
 		</div>
 		<div class="flex flex-col gap-4">
-			<h3 class="text-xl">From Reference</h3>
+			<h3 class="text-2xl">Actions - From Reference</h3>
 			<div class="flex flex-row flex-wrap gap-2">
-				<ActionButton
-					label="Update groups from Reference"
-					onClick={() => updateGroupsFromReference()}
-				/>
-				<ActionButton
-					label="Update lists from Reference"
-					onClick={() => updateListsFromReference()}
-				/>
-				<ActionButton
-					label="Update clients from Reference"
-					onClick={() => updateClientsFromReference()}
-				/>
-				<ActionButton
-					label="Update domains from Reference"
-					onClick={() => updateDomainsFromReference()}
-				/>
+				<ActionButton label="Update groups" onClick={() => updateGroupsFromReference()} />
+				<ActionButton label="Update lists" onClick={() => updateListsFromReference()} />
+				<ActionButton label="Update clients" onClick={() => updateClientsFromReference()} />
+				<ActionButton label="Update domains" onClick={() => updateDomainsFromReference()} />
 			</div>
 		</div>
 	</div>
@@ -595,7 +584,7 @@
 					</select>
 				</div>
 				<div class="mt-3 flex w-full flex-row justify-between">
-					<button class="btn btn-ghost btn-soft" onclick={() => (showPauseDNSBlockingPanel = false)}
+					<button class="btn btn-ghost" onclick={() => (showPauseDNSBlockingPanel = false)}
 						>Cancel</button
 					>
 					<button class="btn btn-primary" onclick={() => pauseDNSBlockingCustomDuration()}>
