@@ -274,7 +274,7 @@
 <section class="flex flex-col gap-4">
 	<h2 class="text-2xl">Pi-hole Instances</h2>
 	<div class="verflow-x-auto">
-		<table class="table">
+		<table class="table w-full overflow-x-auto">
 			<!-- head -->
 			<thead>
 				<tr>

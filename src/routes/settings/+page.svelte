@@ -108,7 +108,7 @@
 				disabled={!instanceRefresh}
 			/>
 		</div>
-		<div class="flex flex-row items-start gap-4">
+		<div class="flex flex-col items-start gap-4 md:flex-row">
 			<label for="sync" class="label">Synchronize with reference: </label>
 			<div class="flex flex-col gap-2">
 				<div id="sync" class="no-wrap flex flex-row gap-2">
@@ -170,7 +170,7 @@
 		{#if form?.invalidPassword}
 			<Error message="The password field is invalid. Must be at least 6 characters long." />
 		{/if}
-		<div class="flex flex-row gap-2">
+		<div class="flex flex-col gap-2 md:flex-row">
 			<label for="password" class="label">Change password: </label>
 			<input
 				type="password"
