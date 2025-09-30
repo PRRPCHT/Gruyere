@@ -6,6 +6,7 @@ import {
 	getPiHoleInstances,
 	savePiHoleInstances
 } from '$lib/models/pihole_instances';
+import { getSettings } from '$lib/models/settings';
 import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
@@ -39,7 +40,8 @@ export const load: ServerLoad = async ({ cookies }) => {
 	});
 
 	return {
-		instances: instances
+		instances: instances,
+		settings: await getSettings()
 	};
 };
 //bamcRAdfwFqecE0HjDLgLqfGon5Y6TykFIIEvrN3mf0=

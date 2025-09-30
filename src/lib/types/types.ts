@@ -113,3 +113,14 @@ export type Domain = {
 	date_added: number;
 	date_modified: number;
 };
+
+export enum SynchronizationMode {
+	PARTIAL = 'partial',
+	COMPLETE = 'complete'
+}
+
+export type Settings = {
+	isRefreshInstance: boolean;
+	instanceRefreshInterval: number;
+	synchronizeWithReference: SynchronizationMode;
+};

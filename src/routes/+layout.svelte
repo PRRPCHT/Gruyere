@@ -57,7 +57,7 @@
 	</div>
 	<div class="flex flex-none flex-row gap-2">
 		{#if $authStore.isAuthenticated}
-			<button class="btn btn-ghost"> Settings </button>
+			<a class="btn btn-ghost" href="/settings"> Settings </a>
 			<button class="btn btn-ghost" onclick={() => authStore.logout()}> Log out </button>
 		{/if}
 	</div>
