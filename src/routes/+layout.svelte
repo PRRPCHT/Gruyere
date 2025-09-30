@@ -3,10 +3,22 @@
 	import gruyere from '$lib/assets/gruyere_256px.webp';
 	import { authStore } from '$lib/stores/auth';
 	import type { LayoutData } from './$types';
+	import { goto as sveltekitGoto } from '$app/navigation';
 	let { children, data }: { children: any; data: LayoutData } = $props();
 
 	// Initialize auth store immediately with server data to prevent flicker
 	authStore.initialize(data.isAuthenticated);
+	let showMenu = $state(false);
+
+	function goto(path: string) {
+		showMenu = false;
+		sveltekitGoto(path);
+	}
+	function logout() {
+		showMenu = false;
+		authStore.logout();
+		goto('/');
+	}
 </script>
 
 <svelte:head>
@@ -15,7 +27,12 @@
 </svelte:head>
 <div class="mx-auto navbar flex max-w-6xl flex-row justify-between bg-base-100 shadow-sm">
 	<div class="flex-none">
-		<label for="my-drawer-2" class="drawer-button btn btn-ghost lg:hidden"
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+		<label
+			for="my-drawer-2"
+			class="drawer-button btn btn-ghost lg:hidden"
+			onclick={() => (showMenu = !showMenu)}
 			><svg
 				xmlns="http://www.w3.org/2000/svg"
 				fill="none"
@@ -55,13 +72,20 @@
 			</div>
 		</a>
 	</div>
-	<div class="flex flex-none flex-row gap-2">
+	<div class="flex hidden flex-none flex-row gap-2 md:block">
 		{#if $authStore.isAuthenticated}
 			<a class="btn btn-ghost" href="/settings"> Settings </a>
 			<button class="btn btn-ghost" onclick={() => authStore.logout()}> Log out </button>
 		{/if}
 	</div>
 </div>
+{#if showMenu && $authStore.isAuthenticated}
+	<div class="flex flex-col gap-2 p-6">
+		<button class="btn" onclick={() => goto('/')}>Home</button>
+		<button class="btn" onclick={() => goto('/settings')}>Settings</button>
+		<button class="btn" onclick={() => logout()}>Log out</button>
+	</div>
+{/if}
 <main class="mx-auto max-w-6xl p-6">
 	{@render children?.()}
 </main>
