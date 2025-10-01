@@ -4,9 +4,12 @@ import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
 const fs = await import('fs/promises');
 const path = await import('path');
 
+// Determine config directory - use /app/config in Docker, ./config in development
+const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
+
 export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 	try {
-		const filePath = path.join(process.cwd(), 'instances.json');
+		const filePath = path.join(configDir, 'instances.json');
 		const fileContent = await fs.readFile(filePath, 'utf-8');
 		return JSON.parse(fileContent);
 	} catch (error) {
@@ -17,7 +20,7 @@ export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 
 export async function savePiHoleInstances(instances: PiHoleInstance[]): Promise<boolean> {
 	try {
-		const filePath = path.join(process.cwd(), 'instances.json');
+		const filePath = path.join(configDir, 'instances.json');
 		await fs.writeFile(filePath, JSON.stringify(instances, null, 2));
 		return true;
 	} catch (error) {
