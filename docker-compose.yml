@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  gruyere:
+    build: .
+    container_name: gruyere
+    ports:
+      - '3141:3141'
+    volumes:
+      # Map local config directory to container's config directory
+      - ./config:/app/config
+    environment:
+      - NODE_ENV=production
+      - PORT=3141
+      - HOST=0.0.0.0
+    restart: unless-stopped
+    # Optional: Add health check
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3141']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
