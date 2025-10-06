@@ -1,5 +1,5 @@
 import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
-import type { Client, Domain, Group, List, PiHoleInstance } from '$lib/types/types';
+import type { Client, Domain, Group, List, PiHoleInstance, Stats } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
 import logger from '$lib/utils/logger';
 import type { group } from 'console';
@@ -74,7 +74,10 @@ export async function pauseDNSBlocking(
 	try {
 		const instanceStatus = await checkAuthentication(instance);
 		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
-			logger.error({ instanceStatus, instance: instance.name }, 'Pausing DNS blocking instance status');
+			logger.error(
+				{ instanceStatus, instance: instance.name },
+				'Pausing DNS blocking instance status'
+			);
 			return false;
 		}
 		const response = await fetch(`${instance.url}/api/dns/blocking`, {
@@ -396,6 +399,38 @@ export async function updateClientForInstance(
 	} catch (error) {
 		checkError(error, instance, 'Error updating client');
 		return false;
+	}
+}
+
+export async function getStats(instance: PiHoleInstance): Promise<Stats> {
+	console.log('Getting stats for Pi-hole', instance.name);
+	try {
+		await checkAuthentication(instance);
+		const response = await fetch(`${instance.url}/api/stats/summary`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				sid: instance.sid
+			}
+		});
+		if (response.status !== 200) {
+			throw new Error('Failed getting stats for Pi-hole instance.');
+		}
+		const data = await response.json();
+		return data;
+	} catch (error) {
+		checkError(error, instance, 'Error getting stats');
+		return {
+			queries: {
+				total: 0,
+				blocked: 0,
+				percent_blocked: 0,
+				unique_domains: 0,
+				forwarded: 0,
+				cached: 0,
+				frequency: 0
+			}
+		} as Stats;
 	}
 }
 
