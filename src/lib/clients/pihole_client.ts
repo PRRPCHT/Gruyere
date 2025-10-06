@@ -1,6 +1,7 @@
 import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
 import type { Client, Domain, Group, List, PiHoleInstance } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
+import logger from '$lib/utils/logger';
 import type { group } from 'console';
 
 // Check if the token is still valid and update the instance credentials if needed
@@ -16,7 +17,6 @@ export async function checkAuthentication(instance: PiHoleInstance): Promise<PiH
 			},
 			signal: AbortSignal.timeout(3000)
 		});
-
 		if (response.status !== 200) {
 			let toReturn = await authenticate(instance);
 			await updatePiHoleInstanceCredentials(instance);
@@ -43,14 +43,15 @@ export async function authenticate(instance: PiHoleInstance): Promise<PiHoleInst
 		});
 		if (response.status === 401 || response.status === 403) {
 			instance.status = PiHoleInstanceStatus.UNAUTHORIZED;
-		}
-		const data = await response.json();
-		if (data.session) {
-			instance.sid = data.session.sid;
-			instance.csrf = data.session.csrf;
-			instance.status = PiHoleInstanceStatus.ACTIVE;
 		} else {
-			instance.status = PiHoleInstanceStatus.UNREACHABLE;
+			const data = await response.json();
+			if (data.session) {
+				instance.sid = data.session.sid;
+				instance.csrf = data.session.csrf;
+				instance.status = PiHoleInstanceStatus.ACTIVE;
+			} else {
+				instance.status = PiHoleInstanceStatus.UNREACHABLE;
+			}
 		}
 	} catch (error) {
 		checkError(error, instance, 'Error authenticating');
@@ -71,7 +72,11 @@ export async function pauseDNSBlocking(
 ): Promise<boolean> {
 	console.log('Pausing DNS blocking for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
+		const instanceStatus = await checkAuthentication(instance);
+		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
+			logger.error({ instanceStatus, instance: instance.name }, 'Pausing DNS blocking instance status');
+			return false;
+		}
 		const response = await fetch(`${instance.url}/api/dns/blocking`, {
 			method: 'POST',
 			body: JSON.stringify({

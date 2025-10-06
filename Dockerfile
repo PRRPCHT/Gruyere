@@ -39,12 +39,24 @@ COPY --from=builder /app/package.json ./package.json
 RUN mkdir -p /app/config
 
 # Copy default config files to config directory
-COPY config.json ./config/
-COPY instances.json ./config/
+#COPY config.json ./config/
+#COPY instances.json ./config/
 
 # Change ownership of the app directory to the sveltekit user
 RUN chown -R sveltekit:nodejs /app
-USER sveltekit
+
+# Create an entrypoint script to fix permissions on startup
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'if [ "$(id -u)" = "0" ]; then' >> /entrypoint.sh && \
+    echo '  chown -R sveltekit:nodejs /app/config' >> /entrypoint.sh && \
+    echo '  exec su-exec sveltekit "$@"' >> /entrypoint.sh && \
+    echo 'else' >> /entrypoint.sh && \
+    echo '  exec "$@"' >> /entrypoint.sh && \
+    echo 'fi' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+# Install su-exec for user switching
+RUN apk add --no-cache su-exec
 
 # Expose port 3141
 EXPOSE 3141
@@ -53,6 +65,8 @@ EXPOSE 3141
 ENV NODE_ENV=production
 ENV PORT=3141
 ENV HOST=0.0.0.0
+ENV ORIGIN=http://localhost:3141
 
 # Start the application
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "build"]

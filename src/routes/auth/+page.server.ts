@@ -1,6 +1,6 @@
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
-import currentPassword from '../../../password.json';
+import currentPassword from '../../../config/password.json';
 
 export const load: ServerLoad = async ({ cookies }) => {
 	// Check if user is already authenticated
