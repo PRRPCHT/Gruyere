@@ -124,3 +124,58 @@ export type Settings = {
 	instanceRefreshInterval: number;
 	synchronizeWithReference: SynchronizationMode;
 };
+
+export type Stats = {
+	queries: {
+		total: number;
+		blocked: number;
+		percent_blocked: number;
+		unique_domains: number;
+		forwarded: number;
+		cached: number;
+		frequency: number;
+		types: {
+			A: number;
+			AAAA: number;
+			ANY: number;
+			SRV: number;
+			SOA: number;
+			PTR: number;
+			TXT: number;
+			NAPTR: number;
+			MX: number;
+			DS: number;
+			RRSIG: number;
+			DNSKEY: number;
+			NS: number;
+			SVCB: number;
+			HTTPS: number;
+			OTHER: number;
+		};
+		status: {
+			UNKNOWN: number;
+			GRAVITY: number;
+			FORWARDED: number;
+			CACHE: number;
+			REGEX: number;
+			DENYLIST: number;
+		};
+	};
+	replies: {
+		UNKNOWN: number;
+		NODATA: number;
+		NXDOMAIN: number;
+		CNAME: number;
+		IP: number;
+		DOMAIN: number;
+	};
+	clients: {
+		active: number;
+		total: number;
+	};
+	gravity: {
+		domains_being_blocked: number;
+		last_update: number;
+	};
+	took: number;
+};
