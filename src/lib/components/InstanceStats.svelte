@@ -71,7 +71,7 @@
 		class:bg-red-800={instanceStatus !== PiHoleInstanceStatus.ACTIVE}
 	>
 		<div class="flex flex-row items-center gap-4 py-2">
-			<div class="text-lg font-bold">{instance.name}</div>
+			<div class="ps-2 text-lg font-bold">{instance.name}</div>
 			<div class="text-sm">
 				<a
 					href={instance.url + '/admin'}

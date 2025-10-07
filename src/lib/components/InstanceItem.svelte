@@ -77,7 +77,7 @@
 </script>
 
 <div
-	class="flex flex-row justify-between p-2"
+	class="flex flex-col justify-between p-2 md:flex-row"
 	class:bg-slate-700={instanceStatus === PiHoleInstanceStatus.ACTIVE ||
 		instanceStatus === PiHoleInstanceStatus.REFRESHING}
 	class:bg-red-800={instanceStatus === PiHoleInstanceStatus.UNAUTHORIZED ||
@@ -114,8 +114,8 @@
 </div>
 
 {#if showEditInstancePanel}
-	<dialog id="edit_pihole_instance_modal" class="modal-open modal">
-		<div class="modal-box flex flex-col gap-4">
+	<dialog id="edit_pihole_instance_modal" class="modal-open modal rounded-none">
+		<div class="modal-box flex flex-col gap-4 rounded-none">
 			<h3 class="text-lg font-bold">Edit Pi-hole instance</h3>
 			<form
 				class="flex flex-col gap-2"
@@ -161,7 +161,7 @@
 					<label class="label" for="instanceName">Instance name</label>
 					<input
 						type="text"
-						class="input w-full"
+						class="input w-full rounded-none"
 						bind:value={editInstanceName}
 						name="name"
 						id="instanceName"
@@ -172,7 +172,7 @@
 					<label class="label" for="instanceUrl">Instance URL</label>
 					<input
 						type="text"
-						class="input w-full"
+						class="input w-full rounded-none"
 						bind:value={editInstanceUrl}
 						name="url"
 						id="instanceUrl"
@@ -183,7 +183,7 @@
 					<label class="label" for="instanceApiKey">API Key</label>
 					<input
 						type="text"
-						class="input w-full"
+						class="input w-full rounded-none"
 						bind:value={editInstanceApiKey}
 						name="apiKey"
 						id="instanceApiKey"
@@ -194,7 +194,7 @@
 					<div class="flex flex-col gap-2">
 						<label class="label" for="isReference">Is Reference</label>
 						<select
-							class="select w-full"
+							class="select w-full rounded-none"
 							bind:value={editIsReference}
 							name="isReference"
 							id="isReference"
@@ -208,13 +208,16 @@
 				{/if}
 				<div class="mt-3 flex w-full flex-row justify-between">
 					<div>
-						<button class="btn btn-ghost" onclick={() => (showEditInstancePanel = false)}
-							>Cancel</button
+						<button
+							class="btn rounded-none btn-ghost"
+							onclick={() => (showEditInstancePanel = false)}>Cancel</button
 						>
-						<button class="btn btn-error" formaction="?/deletePiHoleInstance">Delete</button>
+						<button class="btn rounded-none btn-error" formaction="?/deletePiHoleInstance"
+							>Delete</button
+						>
 					</div>
 
-					<button class="btn btn-primary" type="submit"> Save </button>
+					<button class="btn rounded-none btn-primary" type="submit"> Save </button>
 				</div>
 			</form>
 		</div>

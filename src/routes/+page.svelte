@@ -289,19 +289,17 @@
 		<InstanceItem instance={piHoleInstance} {piHoleInstances} />
 	{/each}
 	<div class="flex flex-row justify-end">
-		<div class="tooltip tooltip-left" data-tip="Add a new Pi-hole instance">
-			<button
-				class="btn bg-gray-700 btn-sm hover:bg-primary"
-				onclick={() => (showAddInstancePanel = !showAddInstancePanel)}
-			>
-				+
-			</button>
-		</div>
+		<!-- <div class="tooltip tooltip-left" data-tip="Add a new Pi-hole instance"> -->
+		<button
+			class="btn w-48 rounded-none bg-slate-700 hover:bg-slate-600"
+			onclick={() => (showAddInstancePanel = !showAddInstancePanel)}>Add new instance</button
+		>
+		<!-- </div> -->
 	</div>
 
 	{#if showAddInstancePanel}
-		<dialog id="add_pihole_instance_modal" class="modal-open modal">
-			<div class="modal-box flex flex-col gap-4">
+		<dialog id="add_pihole_instance_modal" class="modal-open modal rounded-none">
+			<div class="modal-box flex flex-col gap-4 rounded-none">
 				<h3 class="text-lg font-bold">Add a new Pi-hole instance</h3>
 				<form
 					class="flex flex-col gap-2"
@@ -339,7 +337,7 @@
 						<label class="label" for="instanceName">Instance name</label>
 						<input
 							type="text"
-							class="input w-full"
+							class="input w-full rounded-none"
 							placeholder="Instance name"
 							bind:value={newInstanceName}
 							name="name"
@@ -351,7 +349,7 @@
 						<label class="label" for="instanceUrl">Instance URL</label>
 						<input
 							type="text"
-							class="input w-full"
+							class="input w-full rounded-none"
 							placeholder="https://pihole.example.com:port"
 							bind:value={newInstanceUrl}
 							name="url"
@@ -363,7 +361,7 @@
 						<label class="label" for="instanceApiKey">API Key</label>
 						<input
 							type="text"
-							class="input w-full"
+							class="input w-full rounded-none"
 							placeholder="1234567890"
 							bind:value={newInstanceApiKey}
 							name="apiKey"
@@ -372,10 +370,11 @@
 						/>
 					</div>
 					<div class="mt-3 flex w-full flex-row justify-between">
-						<button class="btn btn-ghost" onclick={() => (showAddInstancePanel = false)}
-							>Cancel</button
+						<button
+							class="btn rounded-none btn-ghost"
+							onclick={() => (showAddInstancePanel = false)}>Cancel</button
 						>
-						<button class="btn btn-primary" type="submit"> Add </button>
+						<button class="btn rounded-none btn-primary" type="submit"> Add </button>
 					</div>
 				</form>
 			</div>
@@ -424,8 +423,8 @@
 		</div>
 	</div>
 	{#if showPauseDNSBlockingPanel}
-		<dialog id="pause_dns_blocking_modal" class="modal-open modal">
-			<div class="modal-box flex flex-col gap-4">
+		<dialog id="pause_dns_blocking_modal" class="modal-open modal rounded-none">
+			<div class="modal-box flex flex-col gap-4 rounded-none">
 				<h3 class="text-lg font-bold">Pause DNS Blocking</h3>
 
 				{#if pauseDNSBlockingError}
@@ -440,7 +439,7 @@
 					<label class="label" for="duration">Duration</label>
 					<input
 						type="number"
-						class="input w-full"
+						class="input w-full rounded-none"
 						bind:value={pauseDNSBlockingDuration}
 						name="duration"
 						id="duration"
@@ -450,7 +449,7 @@
 				<div class="flex flex-col gap-2" class:text-error={form?.missingTimeScale}>
 					<label class="label" for="timeScale">Time scale</label>
 					<select
-						class="select w-full"
+						class="select w-full rounded-none"
 						bind:value={pauseDNSBlockingTimeScale}
 						name="timeScale"
 						id="timeScale"
@@ -461,10 +460,14 @@
 					</select>
 				</div>
 				<div class="mt-3 flex w-full flex-row justify-between">
-					<button class="btn btn-ghost" onclick={() => (showPauseDNSBlockingPanel = false)}
-						>Cancel</button
+					<button
+						class="btn rounded-none btn-ghost"
+						onclick={() => (showPauseDNSBlockingPanel = false)}>Cancel</button
 					>
-					<button class="btn btn-primary" onclick={() => pauseDNSBlockingCustomDuration()}>
+					<button
+						class="btn rounded-none btn-primary"
+						onclick={() => pauseDNSBlockingCustomDuration()}
+					>
 						Pause
 					</button>
 				</div>
