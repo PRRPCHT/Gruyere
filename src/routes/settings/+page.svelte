@@ -46,9 +46,8 @@
 </script>
 
 <section class="mb-16 flex flex-col gap-2">
-	<h1 class="text-2xl">Settings</h1>
 	<form
-		class="space-between flex w-full flex-col gap-4 md:flex-row"
+		class="space-between flex w-full flex-col gap-4"
 		method="POST"
 		action="?/changeSettings"
 		use:enhance={({ formElement, formData, action, cancel }) => {
@@ -71,6 +70,12 @@
 			};
 		}}
 	>
+		<div class="flex flex-row justify-between bg-cyan-700 p-2">
+			<div class="flex flex-row items-center gap-4 py-2">
+				<div class="ps-2 text-lg font-bold">Settings</div>
+			</div>
+			<div><button class="btn mx-auto w-full btn-ghost" type="submit">Save</button></div>
+		</div>
 		<div class="flex flex-1 flex-col gap-4">
 			{#if form?.missingInstanceRefreshInterval}
 				<Error message="The instance refresh interval field is required." />
@@ -142,11 +147,9 @@
 				</div>
 			</div>
 		</div>
-		<div><button class="btn mx-auto w-full btn-primary md:w-32" type="submit">Save</button></div>
 	</form>
 </section>
 <section class="flex flex-col gap-4">
-	<h1 class="text-2xl">Security</h1>
 	<form
 		class="flex flex-col gap-4"
 		method="POST"
@@ -169,6 +172,12 @@
 			};
 		}}
 	>
+		<div class="flex flex-row justify-between bg-cyan-700 p-2">
+			<div class="flex flex-row items-center gap-4 py-2">
+				<div class="ps-2 text-lg font-bold">Security</div>
+			</div>
+			<div><button class="btn mx-auto w-full btn-ghost" type="submit">Save</button></div>
+		</div>
 		{#if form?.invalidPassword}
 			<Error message="The password field is invalid. Must be at least 6 characters long." />
 		{/if}
@@ -176,14 +185,13 @@
 			<label for="password" class="label">Change password: </label>
 			<input
 				type="password"
-				class="input"
+				class="input rounded-none"
 				class:border-error={form?.missingPassword || form?.invalidPassword}
 				class:text-error={form?.missingPassword || form?.invalidPassword}
 				bind:value={password}
 				id="password"
 				name="password"
 			/>
-			<button class="btn btn-primary" type="submit">Submit</button>
 		</div>
 	</form>
 </section>

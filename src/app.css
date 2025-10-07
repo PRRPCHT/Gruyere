@@ -2,3 +2,24 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 @plugin "daisyui";
+
+@layer utilities {
+	.input {
+		@apply rounded-none;
+	}
+	.btn {
+		@apply rounded-none;
+	}
+	.select {
+		@apply rounded-none;
+	}
+	.textarea {
+		@apply rounded-none;
+	}
+	.checkbox {
+		@apply rounded-none;
+	}
+	.radio {
+		@apply rounded-none;
+	}
+}
