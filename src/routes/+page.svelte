@@ -283,15 +283,20 @@
 	});
 </script>
 
-<section class="mb-8 flex flex-col gap-4">
-	<h2 class="text-2xl">Pi-hole Instances</h2>
+<section class="mb-8 flex flex-col">
+	<div class="flex flex-row justify-between bg-cyan-700 p-2">
+		<div class="flex flex-row items-center gap-4 py-2">
+			<div class="ps-2 text-lg font-bold">Pi-hole Instances</div>
+		</div>
+	</div>
+
 	{#each piHoleInstances as piHoleInstance}
 		<InstanceItem instance={piHoleInstance} {piHoleInstances} />
 	{/each}
 	<div class="flex flex-row justify-end">
 		<!-- <div class="tooltip tooltip-left" data-tip="Add a new Pi-hole instance"> -->
 		<button
-			class="btn w-48 rounded-none bg-slate-700 hover:bg-slate-600"
+			class="btn w-48 rounded-none border-none bg-slate-700 hover:bg-slate-600"
 			onclick={() => (showAddInstancePanel = !showAddInstancePanel)}>Add new instance</button
 		>
 		<!-- </div> -->
@@ -374,7 +379,9 @@
 							class="btn rounded-none btn-ghost"
 							onclick={() => (showAddInstancePanel = false)}>Cancel</button
 						>
-						<button class="btn rounded-none btn-primary" type="submit"> Add </button>
+						<button class="btn rounded-none bg-slate-700 hover:bg-slate-600" type="submit">
+							Add
+						</button>
 					</div>
 				</form>
 			</div>
@@ -382,9 +389,13 @@
 	{/if}
 </section>
 <section class="flex flex-col gap-12">
-	<div class="flex flex-col gap-4">
-		<h2 class="text-2xl">DNS Blocking - All instances</h2>
-		<div class="flex flex-row flex-wrap gap-2">
+	<div>
+		<div class="flex flex-row justify-between bg-cyan-700 p-2">
+			<div class="flex flex-row items-center gap-4 py-2">
+				<div class="ps-2 text-lg font-bold">DNS Blocking - All instances</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
 			<ActionButton
 				label="Indefinitely"
 				onClick={() => pauseDNSBlocking(999, PauseDurationTimeScale.MINUTES)}
@@ -406,22 +417,32 @@
 		</div>
 	</div>
 
-	<div class="flex flex-col gap-4">
-		<h3 class="text-2xl">Actions - All instances</h3>
-		<div class="flex flex-row flex-wrap gap-2">
+	<div>
+		<div class="flex flex-row justify-between bg-cyan-700 p-2">
+			<div class="flex flex-row items-center gap-4 py-2">
+				<div class="ps-2 text-lg font-bold">Actions - All instances</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
 			<ActionButton label="Update all Gravities" onClick={() => updateGravities()} />
 			<ActionButton label="Restart all DNS" onClick={() => restartDNS()} />
 		</div>
 	</div>
-	<div class="flex flex-col gap-4">
-		<h3 class="text-2xl">Actions - From Reference</h3>
-		<div class="flex flex-row flex-wrap gap-2">
+
+	<div>
+		<div class="flex flex-row justify-between bg-cyan-700 p-2">
+			<div class="flex flex-row items-center gap-4 py-2">
+				<div class="ps-2 text-lg font-bold">Actions - From Reference</div>
+			</div>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
 			<ActionButton label="Update groups" onClick={() => updateGroupsFromReference()} />
 			<ActionButton label="Update lists" onClick={() => updateListsFromReference()} />
 			<ActionButton label="Update clients" onClick={() => updateClientsFromReference()} />
 			<ActionButton label="Update domains" onClick={() => updateDomainsFromReference()} />
 		</div>
 	</div>
+
 	{#if showPauseDNSBlockingPanel}
 		<dialog id="pause_dns_blocking_modal" class="modal-open modal rounded-none">
 			<div class="modal-box flex flex-col gap-4 rounded-none">

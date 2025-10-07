@@ -77,10 +77,12 @@
 </script>
 
 <div
-	class="flex flex-col justify-between p-2 md:flex-row"
+	class="flex flex-col justify-between border-b-1 border-slate-600/50 p-2 md:flex-row"
 	class:bg-slate-700={instanceStatus === PiHoleInstanceStatus.ACTIVE ||
 		instanceStatus === PiHoleInstanceStatus.REFRESHING}
 	class:bg-red-800={instanceStatus === PiHoleInstanceStatus.UNAUTHORIZED ||
+		instanceStatus === PiHoleInstanceStatus.UNREACHABLE}
+	class:border-red-800={instanceStatus === PiHoleInstanceStatus.UNAUTHORIZED ||
 		instanceStatus === PiHoleInstanceStatus.UNREACHABLE}
 >
 	<div class="flex flex-row items-center gap-4 py-2">
@@ -217,7 +219,9 @@
 						>
 					</div>
 
-					<button class="btn rounded-none btn-primary" type="submit"> Save </button>
+					<button class="btn rounded-none bg-slate-700 hover:bg-slate-600" type="submit">
+						Save
+					</button>
 				</div>
 			</form>
 		</div>

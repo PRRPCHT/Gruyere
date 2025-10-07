@@ -64,7 +64,7 @@
 	});
 </script>
 
-<div class="flex w-full flex-col pb-8">
+<div class="flex w-full flex-col border-b-4 border-base-200">
 	<div
 		class="flex flex-row justify-between p-2"
 		class:bg-slate-700={instanceStatus === PiHoleInstanceStatus.ACTIVE}
@@ -80,7 +80,7 @@
 				>
 			</div>
 		</div>
-		<div class="flex flex-row items-center">
+		<div class="flex flex-row items-center gap-2">
 			{#if isRefreshing}
 				<span class="loading loading-md loading-spinner"></span>
 			{/if}
