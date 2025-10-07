@@ -8,6 +8,7 @@
 </script>
 
 <section class="flex flex-col gap-4">
+	<h2 class="text-2xl">Monitor Pi-hole instances</h2>
 	<div class="flex flex-row flex-wrap">
 		{#each instances as instance}
 			<InstanceStats {instance} />
