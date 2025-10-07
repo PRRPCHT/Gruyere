@@ -64,7 +64,7 @@
 	});
 </script>
 
-<div class="flex w-full flex-col border-b-4 border-base-200">
+<div class="flex w-full flex-col">
 	<div
 		class="flex flex-row justify-between p-2"
 		class:bg-slate-700={instanceStatus === PiHoleInstanceStatus.ACTIVE}

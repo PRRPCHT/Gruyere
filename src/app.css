@@ -22,4 +22,7 @@
 	.radio {
 		@apply rounded-none;
 	}
+	.header {
+		background-color: var(--color-base-100);
+	}
 }

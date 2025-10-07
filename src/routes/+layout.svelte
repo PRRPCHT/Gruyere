@@ -89,6 +89,6 @@
 		<button class="btn" onclick={() => logout()}>Log out</button>
 	</div>
 {/if}
-<main class="mx-auto max-w-6xl p-6">
+<main class="mx-auto max-w-6xl p-4">
 	{@render children?.()}
 </main>
