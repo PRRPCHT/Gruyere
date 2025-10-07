@@ -37,7 +37,7 @@ export const load: ServerLoad = async ({ cookies }) => {
 
 	let instances = await getPiHoleInstances();
 	instances.forEach((instance) => {
-		instance.status = PiHoleInstanceStatus.REFRESHING;
+		//instance.status = PiHoleInstanceStatus.REFRESHING;
 	});
 
 	return {

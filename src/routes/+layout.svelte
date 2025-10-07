@@ -31,7 +31,7 @@
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<label
 			for="my-drawer-2"
-			class="drawer-button btn btn-ghost lg:hidden"
+			class="drawer-button btn btn-ghost md:hidden"
 			onclick={() => (showMenu = !showMenu)}
 			><svg
 				xmlns="http://www.w3.org/2000/svg"
@@ -89,6 +89,6 @@
 		<button class="btn" onclick={() => logout()}>Log out</button>
 	</div>
 {/if}
-<main class="mx-auto max-w-6xl p-6">
+<main class="mx-auto max-w-6xl p-4">
 	{@render children?.()}
 </main>

@@ -6,12 +6,12 @@
 	let { instance }: { instance: PiHoleInstance } = $props();
 	let stats = $state<Stats | null>(null);
 	let instanceStatus = $state<PiHoleInstanceStatus>(instance.status);
-	let loading = $state(true);
+	let isRefreshing = $state(true);
 	let error = $state<string | null>(null);
 	let refreshInterval: NodeJS.Timeout | null = $state(null);
 
 	function refreshStats() {
-		loading = true;
+		isRefreshing = true;
 
 		// Call our local API
 		fetch(`/api/getStats?instance=${instance.id}`)
@@ -28,7 +28,7 @@
 				error = 'Failed to load stats.';
 			})
 			.finally(() => {
-				loading = false;
+				isRefreshing = false;
 			});
 	}
 
@@ -64,14 +64,14 @@
 	});
 </script>
 
-<div class="flex w-full flex-col py-4">
+<div class="flex w-full flex-col">
 	<div
 		class="flex flex-row justify-between p-2"
 		class:bg-slate-700={instanceStatus === PiHoleInstanceStatus.ACTIVE}
 		class:bg-red-800={instanceStatus !== PiHoleInstanceStatus.ACTIVE}
 	>
 		<div class="flex flex-row items-center gap-4 py-2">
-			<div class="text-lg font-bold">{instance.name}</div>
+			<div class="ps-2 text-lg font-bold">{instance.name}</div>
 			<div class="text-sm">
 				<a
 					href={instance.url + '/admin'}
@@ -80,7 +80,10 @@
 				>
 			</div>
 		</div>
-		<div class="flex flex-row items-center">
+		<div class="flex flex-row items-center gap-2">
+			{#if isRefreshing}
+				<span class="loading loading-md loading-spinner"></span>
+			{/if}
 			{#if instanceStatus === PiHoleInstanceStatus.ACTIVE}
 				<div class="badge badge-soft badge-success">Active</div>
 			{:else if instanceStatus === PiHoleInstanceStatus.UNAUTHORIZED}
