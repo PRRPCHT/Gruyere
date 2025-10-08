@@ -89,16 +89,16 @@
 				<Error message="The synchronize with reference field is required." />
 			{/if}
 			<div class="flex flex-row gap-2">
-				<label for="instanceRefresh" class="label">Automatic instances refresh: </label>
+				<label for="instanceRefresh" class="label lg:w-1/4">Automatic instances refresh: </label>
 				<input
 					type="checkbox"
-					class="checkbox bg-base-100 checkbox-primary"
+					class="checkbox-custom checkbox bg-base-100"
 					bind:checked={instanceRefresh}
 					name="isRefreshInstance"
 				/>
 			</div>
 			<div class="flex flex-row gap-2">
-				<label for="instanceRefreshInterval" class="label"
+				<label for="instanceRefreshInterval" class="label lg:w-1/4"
 					>Instance refresh interval (seconds):
 				</label>
 				<input
@@ -114,13 +114,13 @@
 					disabled={!instanceRefresh}
 				/>
 			</div>
-			<div class="flex flex-col items-start gap-4 md:flex-row">
-				<label for="sync" class="label">Synchronize with reference: </label>
+			<div class="flex flex-col items-start gap-2 md:flex-row">
+				<label for="sync" class="label lg:w-1/4">Synchronize with reference: </label>
 				<div class="flex flex-col gap-2">
 					<div id="sync" class="no-wrap flex flex-row gap-2">
 						<input
 							type="radio"
-							class="radio bg-base-100 radio-primary"
+							class="radio-custom radio bg-base-100"
 							bind:group={synchronizeWithReference}
 							id="synchronizeWithReference"
 							name="synchronizeWithReference"
@@ -135,7 +135,7 @@
 					<div class="no-wrap flex flex-row gap-2">
 						<input
 							type="radio"
-							class="radio bg-base-100 radio-primary"
+							class="radio-custom radio bg-base-100"
 							bind:group={synchronizeWithReference}
 							id="synchronizeWithReference"
 							name="synchronizeWithReference"
@@ -182,7 +182,7 @@
 			<Error message="The password field is invalid. Must be at least 6 characters long." />
 		{/if}
 		<div class="flex flex-col gap-2 md:flex-row">
-			<label for="password" class="label">Change password: </label>
+			<label for="password" class="label lg:w-1/4">Change password: </label>
 			<input
 				type="password"
 				class="input rounded-none"

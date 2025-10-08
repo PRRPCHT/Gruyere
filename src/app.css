@@ -25,4 +25,10 @@
 	.header {
 		background-color: var(--color-base-100);
 	}
+	.radio-custom {
+		--input-color: var(--color-slate-500);
+	}
+	.checkbox-custom {
+		--input-color: var(--color-slate-600);
+	}
 }
