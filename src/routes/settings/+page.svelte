@@ -114,7 +114,7 @@
 					disabled={!instanceRefresh}
 				/>
 			</div>
-			<div class="flex flex-col items-start gap-2 md:flex-row">
+			<!-- <div class="flex flex-col items-start gap-2 md:flex-row">
 				<label for="sync" class="label lg:w-1/4">Synchronize with reference: </label>
 				<div class="flex flex-col gap-2">
 					<div id="sync" class="no-wrap flex flex-row gap-2">
@@ -145,7 +145,7 @@
 						<label for="synchronizeWithReference" class="label">Complete synchronization </label>
 					</div>
 				</div>
-			</div>
+			</div> -->
 		</div>
 	</form>
 </section>
