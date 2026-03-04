@@ -1,5 +1,4 @@
 import type { LayoutServerLoad } from './$types';
-import logger from '$lib/utils/logger';
 import { validateSession } from '$lib/server/session';
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
