@@ -85,10 +85,9 @@ export async function editPiHoleInstance(
 				newInstances = newInstances.map((instance) =>
 					instance.id === id ? { ...instance, isReference: false } : instance
 				);
-				if (newInstances.length >= 1 && newInstances[0].id != id) {
-					newInstances[0].isReference = true;
-				} else {
-					newInstances[1].isReference = true;
+				const nextReference = newInstances.find((instance) => instance.id !== id);
+				if (nextReference) {
+					nextReference.isReference = true;
 				}
 			}
 		}
