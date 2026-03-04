@@ -39,7 +39,7 @@
 			newInstances.map(async (instance) => {
 				const result = await fetch('/api/resumeDNSBlocking', {
 					method: 'POST',
-					body: JSON.stringify({ instance })
+					body: JSON.stringify({ instanceId: instance.id })
 				});
 				const data = await result.json();
 				if (data.status) {
@@ -60,7 +60,7 @@
 				body: JSON.stringify({
 					duration: pauseDNSBlockingDuration,
 					timeScale: pauseDNSBlockingTimeScale,
-					instance
+					instanceId: instance.id
 				})
 			});
 			const data = await result.json();
@@ -81,7 +81,7 @@
 		newInstances.forEach(async (instance) => {
 			const result = await fetch('/api/pauseDNSBlocking', {
 				method: 'POST',
-				body: JSON.stringify({ duration, timeScale, instance })
+				body: JSON.stringify({ duration, timeScale, instanceId: instance.id })
 			});
 			const data = await result.json();
 			if (data.status) {
@@ -107,7 +107,7 @@
 		newInstances.forEach(async (instance) => {
 			const result = await fetch('/api/updateGravities', {
 				method: 'POST',
-				body: JSON.stringify({ instance })
+				body: JSON.stringify({ instanceId: instance.id })
 			});
 			const data = await result.json();
 			if (data.status) {
@@ -122,7 +122,7 @@
 		newInstances.forEach(async (instance) => {
 			const result = await fetch('/api/restartDNS', {
 				method: 'POST',
-				body: JSON.stringify({ instance })
+				body: JSON.stringify({ instanceId: instance.id })
 			});
 			const data = await result.json();
 			if (data.status) {
