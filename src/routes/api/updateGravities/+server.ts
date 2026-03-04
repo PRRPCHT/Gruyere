@@ -3,21 +3,9 @@ import type { RequestHandler } from './$types';
 import { PiHoleInstanceStatus, type ActionStatus } from '$lib/types/types';
 import { updateGravity } from '$lib/clients/pihole_client';
 import logger from '$lib/utils/logger';
-import { validateSession } from '$lib/server/session';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-	// Check authentication
-	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || !validateSession(sessionCookie)) {
-		const actionStatus: ActionStatus = {
-			success: false,
-			instance: 'Unknown instance',
-			message: 'Unauthorized',
-			instanceStatus: PiHoleInstanceStatus.UNAUTHORIZED
-		};
-		return json({ success: false, status: actionStatus }, { status: 401 });
-	}
+export const POST: RequestHandler = async ({ request }) => {
 	const { instanceId }: { instanceId: number } = await request.json();
 	if (!instanceId) {
 		const actionStatus: ActionStatus = {

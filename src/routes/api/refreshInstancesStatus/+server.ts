@@ -3,16 +3,8 @@ import type { RequestHandler } from './$types';
 import { getPiHoleInstances, savePiHoleInstances } from '$lib/models/pihole_instances';
 import { checkAuthentication } from '$lib/clients/pihole_client';
 import logger from '$lib/utils/logger';
-import { validateSession } from '$lib/server/session';
-
-export const GET: RequestHandler = async ({ cookies }) => {
+export const GET: RequestHandler = async () => {
 	logger.info('Refreshing instances status');
-
-	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || !validateSession(sessionCookie)) {
-		logger.warn('Unauthorized access attempt to refresh instances status');
-		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
-	}
 
 	const instances = await getPiHoleInstances();
 	logger.debug(`Found ${instances.length} instances to check`);

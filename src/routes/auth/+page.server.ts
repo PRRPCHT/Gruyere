@@ -1,27 +1,15 @@
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 import { getPasswordHash, verifyPassword } from '$lib/models/password';
-import { createSession, validateSession } from '$lib/server/session';
+import { createSession } from '$lib/server/session';
 
-export const load: ServerLoad = async ({ cookies }) => {
-	// Check if user is already authenticated
-	const sessionCookie = cookies.get('auth_session');
-	let isAuthenticated = false;
-
-	if (sessionCookie) {
-		isAuthenticated = validateSession(sessionCookie);
-		if (!isAuthenticated) {
-			cookies.delete('auth_session', { path: '/' });
-		}
-	}
-
-	// If already authenticated, redirect to home
-	if (isAuthenticated) {
+export const load: ServerLoad = async ({ locals }) => {
+	if (locals.isAuthenticated) {
 		throw redirect(302, '/');
 	}
 
 	return {
-		isAuthenticated
+		isAuthenticated: false
 	};
 };
 

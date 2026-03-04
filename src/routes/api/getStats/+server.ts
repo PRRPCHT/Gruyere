@@ -2,14 +2,8 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import { getStats } from '$lib/clients/pihole_client';
-import { validateSession } from '$lib/server/session';
 
-export const GET: RequestHandler = async ({ url, cookies }) => {
-	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || !validateSession(sessionCookie)) {
-		return json({ error: 'Unauthorized' }, { status: 401 });
-	}
-
+export const GET: RequestHandler = async ({ url }) => {
 	const instanceId = url.searchParams.get('instance');
 	if (!instanceId) {
 		return json({ error: 'Instance ID is required' }, { status: 400 });
