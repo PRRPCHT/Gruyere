@@ -2,23 +2,75 @@ version: '3.8'
 
 services:
   gruyere:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: gruyere
+    image: gruyere:latest
+
+    # Port mapping
     ports:
       - '3141:3141'
+
+    # Volume mounts
     volumes:
-      # Map local config directory to container's config directory
+      # Mount local config directory to container
+      # This persists your Pi-hole instances, settings, and password
       - ./config:/app/config
+
+    # Environment variables
+    # You can override these by creating a .env file
     environment:
       - NODE_ENV=production
       - PORT=3141
       - HOST=0.0.0.0
-      - ORIGIN=http://localhost:3141
+      # IMPORTANT: Change this to your actual domain/IP in production
+      # Examples: http://192.168.1.100:3141 or https://gruyere.example.com
+      - ORIGIN=${ORIGIN:-http://localhost:3141}
+      # Optional: Set log level (fatal, error, warn, info, debug, trace)
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+
+    # Load environment variables from .env file (if present)
+    env_file:
+      - .env
+
+    # Resource limits to prevent container from consuming too much
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'      # Limit to 1 CPU core
+          memory: 512M     # Limit to 512MB RAM
+        reservations:
+          cpus: '0.25'     # Reserve at least 0.25 CPU
+          memory: 128M     # Reserve at least 128MB RAM
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true  # Prevent privilege escalation
+
+    # Restart policy
     restart: unless-stopped
-    # Optional: Add health check
+
+    # Healthcheck using curl (installed in Dockerfile)
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3141']
+      test: ['CMD', 'curl', '-f', 'http://localhost:3141/']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+    # Network configuration
+    networks:
+      - gruyere_network
+
+# Define networks
+networks:
+  gruyere_network:
+    driver: bridge

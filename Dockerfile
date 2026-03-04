@@ -1,72 +1,122 @@
-# Use official Node.js image as base
+# syntax=docker/dockerfile:1
+
+# =============================================================================
+# Base Stage - Common dependencies
+# =============================================================================
 FROM node:20-alpine AS base
 
-# Install dependencies only when needed
+# Install security updates
+RUN apk upgrade --no-cache
+
+# Set working directory
+WORKDIR /app
+
+# =============================================================================
+# Dependencies Stage - Production dependencies only
+# =============================================================================
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+
+# Install libc6-compat for Node.js compatibility with Alpine Linux
+# See: https://github.com/nodejs/docker-node/tree/main#nodealpine
 RUN apk add --no-cache libc6-compat
-WORKDIR /app
 
-# Install dependencies based on the preferred package manager
+# Copy package files
 COPY package.json package-lock.json* ./
-RUN npm ci --only=production
 
-# Rebuild the source code only when needed
+# Install production dependencies only
+# Use npm ci for reproducible builds
+RUN npm ci --only=production --ignore-scripts && \
+    npm cache clean --force
+
+# =============================================================================
+# Builder Stage - Build the application
+# =============================================================================
 FROM base AS builder
-WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
 
+# Install build dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy package files
+COPY package.json package-lock.json* ./
+
+# Install all dependencies (including devDependencies)
+RUN npm ci --ignore-scripts && \
+    npm cache clean --force
+
+# Copy source code
 COPY . .
 
-# Build the application with production config
-RUN cp svelte.config.prod.js svelte.config.js && npm run build
+# Copy production config and build
+# Enable precompression for better performance
+RUN cp svelte.config.prod.js svelte.config.js && \
+    npm run build
 
-# Production image, copy all the files and run the app
+# =============================================================================
+# Runtime Stage - Final production image
+# =============================================================================
 FROM base AS runner
-WORKDIR /app
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 sveltekit
+# Add OCI labels for metadata
+LABEL org.opencontainers.image.title="Gruyere" \
+      org.opencontainers.image.description="Multi Pi-hole management dashboard" \
+      org.opencontainers.image.vendor="Gruyere" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.url="https://github.com/yourusername/gruyere" \
+      org.opencontainers.image.documentation="https://github.com/yourusername/gruyere/blob/main/README.md" \
+      org.opencontainers.image.version="0.0.1"
 
-# Copy the built application
-COPY --from=builder /app/build ./build
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+# Install runtime dependencies
+# - su-exec: for dropping privileges safely
+# - curl: for healthchecks
+# - dumb-init: for proper signal handling
+RUN apk add --no-cache \
+    su-exec \
+    curl \
+    dumb-init
 
-# Create config directory for volume mounting
-RUN mkdir -p /app/config
+# Create non-root user and group
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs sveltekit
 
-# Copy default config files to config directory
-#COPY config.json ./config/
-#COPY instances.json ./config/
+# Copy built application from builder stage
+COPY --from=builder --chown=sveltekit:nodejs /app/build ./build
+COPY --from=deps --chown=sveltekit:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=sveltekit:nodejs /app/package.json ./package.json
 
-# Change ownership of the app directory to the sveltekit user
-RUN chown -R sveltekit:nodejs /app
+# Copy configuration templates (not actual config files)
+COPY --chown=sveltekit:nodejs config/*.example.json ./config/
 
-# Create an entrypoint script to fix permissions on startup
-RUN echo '#!/bin/sh' > /entrypoint.sh && \
-    echo 'if [ "$(id -u)" = "0" ]; then' >> /entrypoint.sh && \
-    echo '  chown -R sveltekit:nodejs /app/config' >> /entrypoint.sh && \
-    echo '  exec su-exec sveltekit "$@"' >> /entrypoint.sh && \
-    echo 'else' >> /entrypoint.sh && \
-    echo '  exec "$@"' >> /entrypoint.sh && \
-    echo 'fi' >> /entrypoint.sh && \
-    chmod +x /entrypoint.sh
+# Copy entrypoint script
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
 
-# Install su-exec for user switching
-RUN apk add --no-cache su-exec
+# Create config directory with proper permissions
+RUN mkdir -p /app/config && \
+    chown -R sveltekit:nodejs /app/config
 
-# Expose port 3141
+# Expose application port
 EXPOSE 3141
 
 # Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3141
-ENV HOST=0.0.0.0
-ENV ORIGIN=http://localhost:3141
+ENV NODE_ENV=production \
+    PORT=3141 \
+    HOST=0.0.0.0 \
+    ORIGIN=http://localhost:3141 \
+    # Optimize Node.js for production
+    NODE_OPTIONS="--max-old-space-size=512" \
+    # Enable better error handling
+    NODE_NO_WARNINGS=1
 
-# Start the application
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["node", "build"]
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Run entrypoint script
+CMD ["/entrypoint.sh", "node", "build"]
+
+# Healthcheck to verify the application is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:3141/ || exit 1
+
+# Add security configurations
+# Note: read-only root filesystem would require additional tmpfs mounts
+# for Node.js temp files, so we're not enabling it by default
+# VOLUME ["/app/config"]
