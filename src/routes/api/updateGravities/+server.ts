@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
 			message: 'Unauthorized',
@@ -16,9 +16,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
-	let { instance }: { instance: PiHoleInstance } = await request.json();
+	const { instance }: { instance: PiHoleInstance } = await request.json();
 	if (!instance) {
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
 			message: 'Instance not found',
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	}
 	try {
 		const updateSuccess = await updateGravity(instance);
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,
 			message: updateSuccess ? 'Gravities updated successfully' : 'Failed to update gravities',
@@ -36,8 +36,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: updateSuccess, status: actionStatus });
 	} catch (error) {
-		logger.error('Error updating gravities', { error, instance: instance.name });
-		let actionStatus: ActionStatus = {
+		logger.error({ error, instance: instance.name }, 'Error updating gravities');
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
 			message: 'Failed to update gravities',

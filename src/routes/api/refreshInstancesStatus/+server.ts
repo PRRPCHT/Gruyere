@@ -4,7 +4,7 @@ import { getPiHoleInstances, savePiHoleInstances } from '$lib/models/pihole_inst
 import { checkAuthentication } from '$lib/clients/pihole_client';
 import logger from '$lib/utils/logger';
 
-export const GET: RequestHandler = async ({ request, url, cookies }) => {
+export const GET: RequestHandler = async ({ cookies }) => {
 	logger.info('Refreshing instances status');
 
 	const sessionCookie = cookies.get('auth_session');

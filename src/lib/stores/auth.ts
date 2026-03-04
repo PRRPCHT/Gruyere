@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 
 // Auth state
 export interface AuthState {
@@ -28,7 +29,7 @@ const createAuthStore = () => {
 					isAuthenticated: false,
 					sessionExpires: null
 				});
-				goto('/auth');
+				goto(resolve('/auth'));
 			}
 		},
 		initialize: (serverAuthState: boolean) => {

@@ -1,5 +1,5 @@
 import { authenticate } from '$lib/clients/pihole_client';
-import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
+import type { PiHoleInstance } from '$lib/types/types';
 
 const fs = await import('fs/promises');
 const path = await import('path');

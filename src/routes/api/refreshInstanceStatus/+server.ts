@@ -4,7 +4,7 @@ import { getPiHoleInstances, savePiHoleInstances } from '$lib/models/pihole_inst
 import { checkAuthentication } from '$lib/clients/pihole_client';
 import logger from '$lib/utils/logger';
 
-export const GET: RequestHandler = async ({ request, url, cookies }) => {
+export const GET: RequestHandler = async ({ url, cookies }) => {
 	logger.info('Refreshing instance status');
 
 	const sessionCookie = cookies.get('auth_session');
@@ -22,7 +22,7 @@ export const GET: RequestHandler = async ({ request, url, cookies }) => {
 	const instances = await getPiHoleInstances();
 	logger.debug(`Found ${instances.length} instances to check`);
 
-	let instance = instances.find((instance) => instance.id === parseInt(instanceId));
+	const instance = instances.find((instance) => instance.id === parseInt(instanceId));
 	if (!instance) {
 		logger.warn('Instance not found');
 		return json({ success: false, error: 'Instance not found' }, { status: 404 });

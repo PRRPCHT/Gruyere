@@ -14,10 +14,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
 	}
 
-	let { instance }: { instance: PiHoleInstance } = await request.json();
+	const { instance }: { instance: PiHoleInstance } = await request.json();
 	if (!instance) {
 		logger.warn('Invalid resume DNS blocking request - no instance provided');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
 			message: 'Failed to resume DNS blocking',
@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const resumeSuccess = await resumeDNSBlocking(instance);
 		success = success && resumeSuccess;
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: resumeSuccess,
 			instance: instance.name,
 			message: resumeSuccess
@@ -50,7 +50,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success, status: actionStatus });
 	} catch (error) {
 		logger.error({ error, instance: instance.name }, 'Error resuming DNS blocking');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
 			message: 'Failed to resume DNS blocking',

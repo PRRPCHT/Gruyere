@@ -7,7 +7,6 @@
 	let stats = $state<Stats | null>(null);
 	let instanceStatus = $state<PiHoleInstanceStatus>(instance.status);
 	let isRefreshing = $state(true);
-	let error = $state<string | null>(null);
 	let refreshInterval: NodeJS.Timeout | null = $state(null);
 
 	function refreshStats() {
@@ -25,7 +24,6 @@
 			})
 			.catch((err) => {
 				console.error('Fetch error:', err);
-				error = 'Failed to load stats.';
 			})
 			.finally(() => {
 				isRefreshing = false;
@@ -76,6 +74,7 @@
 				<a
 					href={instance.url + '/admin'}
 					target="_blank"
+					rel="external"
 					class="link no-underline hover:text-secondary">{instance.url}</a
 				>
 			</div>

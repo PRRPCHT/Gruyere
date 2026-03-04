@@ -1,7 +1,6 @@
 <script lang="ts">
 	import {
 		PiHoleInstanceStatus,
-		SynchronizationMode,
 		type Toast,
 		type ActionStatus,
 		type Settings
@@ -18,15 +17,9 @@
 			? form.instanceRefreshInterval
 			: data.settings.instanceRefreshInterval
 	);
-	let instanceRefresh = $state(
-		form?.isRefreshInstance ? form.isRefreshInstance : data.settings.isRefreshInstance
+	let instanceRefresh = $state<boolean>(
+		form?.isRefreshInstance ? (form.isRefreshInstance as boolean) : data.settings.isRefreshInstance
 	);
-	let synchronizeWithReference = $state(
-		form?.synchronizeWithReference
-			? form.synchronizeWithReference
-			: data.settings.synchronizeWithReference
-	);
-
 	let toasts: Toast[] = $state([]);
 
 	function addToast(success: boolean) {
@@ -39,7 +32,7 @@
 			instanceStatus: PiHoleInstanceStatus.ACTIVE
 		};
 		toasts.push({ id, status });
-		const timer = setTimeout(() => {
+		setTimeout(() => {
 			toasts = toasts.filter((toast) => toast.id !== id);
 		}, 5000);
 	}
@@ -50,7 +43,7 @@
 		class="space-between flex w-full flex-col gap-4"
 		method="POST"
 		action="?/changeSettings"
-		use:enhance={({ formElement, formData, action, cancel }) => {
+		use:enhance={() => {
 			return async ({
 				result,
 				update
@@ -62,7 +55,6 @@
 				if (result.type === 'success' && result.data?.settingsSaved) {
 					instanceRefresh = result.data.settings.isRefreshInstance;
 					instanceRefreshInterval = result.data.settings.instanceRefreshInterval;
-					synchronizeWithReference = result.data.settings.synchronizeWithReference;
 					addToast(result.data.settingsSaved);
 				} else {
 					addToast(false);
@@ -154,7 +146,7 @@
 		class="flex flex-col gap-4"
 		method="POST"
 		action="?/changePassword"
-		use:enhance={({ formElement, formData, action, cancel }) => {
+		use:enhance={() => {
 			return async ({
 				result,
 				update
@@ -197,7 +189,7 @@
 </section>
 <section class="flex flex-col gap-4">
 	<div class="toast flex flex-col gap-2">
-		{#each toasts as toast}
+		{#each toasts as toast (toast.id)}
 			<SuccessToast status={toast.status} />
 		{/each}
 	</div>

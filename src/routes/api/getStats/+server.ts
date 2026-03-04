@@ -3,7 +3,7 @@ import { json } from '@sveltejs/kit';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import { getStats } from '$lib/clients/pihole_client';
 
-export const GET: RequestHandler = async ({ request, url, cookies }) => {
+export const GET: RequestHandler = async ({ url, cookies }) => {
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
 		return json({ error: 'Unauthorized' }, { status: 401 });
