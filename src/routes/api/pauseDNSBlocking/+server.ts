@@ -1,14 +1,10 @@
 import { pauseDNSBlocking } from '$lib/clients/pihole_client';
-import {
-	PauseDurationTimeScale,
-	PiHoleInstanceStatus,
-	type ActionStatus,
-	type PiHoleInstance
-} from '$lib/types/types';
+import { PauseDurationTimeScale, PiHoleInstanceStatus, type ActionStatus } from '$lib/types/types';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import logger from '$lib/utils/logger';
 import { validateSession } from '$lib/server/session';
+import { getPiHoleInstances } from '$lib/models/pihole_instances';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	logger.info('Pause DNS blocking request received');
@@ -29,29 +25,38 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const {
 		duration: rawDuration,
 		timeScale,
-		instance
+		instanceId
 	}: {
 		duration: number;
 		timeScale: PauseDurationTimeScale;
-		instance: PiHoleInstance;
+		instanceId: number;
 	} = await request.json();
 
-	if (!rawDuration || rawDuration <= 0 || !timeScale || !instance) {
+	if (!rawDuration || rawDuration <= 0 || !timeScale || !instanceId) {
 		logger.warn(
-			{
-				duration: rawDuration,
-				timeScale,
-				instance: instance?.name
-			},
+			{ duration: rawDuration, timeScale, instanceId },
 			'Invalid pause DNS blocking request parameters'
 		);
 		const actionStatus: ActionStatus = {
 			success: false,
-			instance: instance ? instance.name : 'Unknown instance',
+			instance: 'Unknown instance',
 			message: 'Failed to pause DNS blocking',
-			instanceStatus: instance?.status || PiHoleInstanceStatus.UNREACHABLE
+			instanceStatus: PiHoleInstanceStatus.UNREACHABLE
 		};
 		return json({ success: false, status: actionStatus });
+	}
+
+	const instances = await getPiHoleInstances();
+	const instance = instances.find((i) => i.id === instanceId);
+	if (!instance) {
+		logger.warn({ instanceId }, 'Instance not found for pause DNS blocking');
+		const actionStatus: ActionStatus = {
+			success: false,
+			instance: 'Unknown instance',
+			message: 'Instance not found',
+			instanceStatus: PiHoleInstanceStatus.UNREACHABLE
+		};
+		return json({ success: false, status: actionStatus }, { status: 404 });
 	}
 
 	const duration = Math.round(rawDuration);

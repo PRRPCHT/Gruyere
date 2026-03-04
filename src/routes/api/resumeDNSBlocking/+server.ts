@@ -1,9 +1,10 @@
 import { resumeDNSBlocking } from '$lib/clients/pihole_client';
-import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
+import { PiHoleInstanceStatus, type ActionStatus } from '$lib/types/types';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import logger from '$lib/utils/logger';
 import { validateSession } from '$lib/server/session';
+import { getPiHoleInstances } from '$lib/models/pihole_instances';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	logger.info('Resume DNS blocking request received');
@@ -15,9 +16,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: false, error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const { instance }: { instance: PiHoleInstance } = await request.json();
-	if (!instance) {
-		logger.warn('Invalid resume DNS blocking request - no instance provided');
+	const { instanceId }: { instanceId: number } = await request.json();
+	if (!instanceId) {
+		logger.warn('Invalid resume DNS blocking request - no instanceId provided');
 		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
@@ -25,6 +26,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			instanceStatus: PiHoleInstanceStatus.UNREACHABLE
 		};
 		return json({ success: false, status: actionStatus });
+	}
+
+	const instances = await getPiHoleInstances();
+	const instance = instances.find((i) => i.id === instanceId);
+	if (!instance) {
+		logger.warn({ instanceId }, 'Instance not found for resume DNS blocking');
+		const actionStatus: ActionStatus = {
+			success: false,
+			instance: 'Unknown instance',
+			message: 'Instance not found',
+			instanceStatus: PiHoleInstanceStatus.UNREACHABLE
+		};
+		return json({ success: false, status: actionStatus }, { status: 404 });
 	}
 
 	logger.info(`Resuming DNS blocking for instance ${instance.name}`);
