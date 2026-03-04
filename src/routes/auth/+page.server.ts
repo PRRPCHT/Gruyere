@@ -1,6 +1,6 @@
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
-import currentPassword from '../../../config/password.json';
+import { getPasswordHash, verifyPassword } from '$lib/models/password';
 import { createSession, validateSession } from '$lib/server/session';
 
 export const load: ServerLoad = async ({ cookies }) => {
@@ -29,7 +29,8 @@ export const actions: Actions = {
 	login: async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const password = formData.get('password') as string;
-		if (password !== currentPassword.password) {
+		const hash = await getPasswordHash();
+		if (!hash || !(await verifyPassword(password, hash))) {
 			return fail(401, { error: 'Invalid password' });
 		}
 		const token = createSession();
