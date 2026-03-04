@@ -103,7 +103,7 @@ export async function editPiHoleInstance(
 export async function updatePiHoleInstanceCredentials(instance: PiHoleInstance) {
 	try {
 		const instances = await getPiHoleInstances();
-		if (!instances.find((instance) => instance.id === instance.id)) {
+		if (!instances.find((i) => i.id === instance.id)) {
 			throw new Error('Instance not found');
 		}
 		const newInstances = instances.map((toEdit) =>
