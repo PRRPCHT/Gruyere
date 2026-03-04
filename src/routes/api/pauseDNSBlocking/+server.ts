@@ -3,24 +3,10 @@ import { PauseDurationTimeScale, PiHoleInstanceStatus, type ActionStatus } from 
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import logger from '$lib/utils/logger';
-import { validateSession } from '$lib/server/session';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ request }) => {
 	logger.info('Pause DNS blocking request received');
-
-	// Check authentication
-	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || !validateSession(sessionCookie)) {
-		logger.warn('Unauthorized access attempt to pause DNS blocking');
-		const actionStatus: ActionStatus = {
-			success: false,
-			instance: 'Unknown instance',
-			message: 'Unauthorized',
-			instanceStatus: PiHoleInstanceStatus.UNAUTHORIZED
-		};
-		return json({ success: false, status: actionStatus }, { status: 401 });
-	}
 
 	const {
 		duration: rawDuration,

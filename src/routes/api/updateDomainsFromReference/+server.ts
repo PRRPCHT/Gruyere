@@ -9,20 +9,7 @@ import {
 	type PiHoleInstance
 } from '$lib/types/types';
 import logger from '$lib/utils/logger';
-import { validateSession } from '$lib/server/session';
-
-export const POST: RequestHandler = async ({ cookies }) => {
-	// Check authentication
-	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || !validateSession(sessionCookie)) {
-		const actionStatus: ActionStatus = {
-			success: false,
-			instance: 'Unknown instance',
-			message: 'Unauthorized',
-			instanceStatus: PiHoleInstanceStatus.UNAUTHORIZED
-		};
-		return json({ success: false, status: actionStatus }, { status: 401 });
-	}
+export const POST: RequestHandler = async () => {
 	logger.info('Updating domains from reference');
 	const instances = await getPiHoleInstances();
 	const reference = instances.find((instance) => instance.isReference);
