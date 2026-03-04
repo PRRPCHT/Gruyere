@@ -11,6 +11,7 @@ import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$l
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 import logger from '$lib/utils/logger';
+import { validateSession } from '$lib/server/session';
 
 export const load: ServerLoad = async ({ cookies }) => {
 	// Check authentication
@@ -18,15 +19,8 @@ export const load: ServerLoad = async ({ cookies }) => {
 	let isAuthenticated = false;
 
 	if (sessionCookie) {
-		try {
-			const expires = parseInt(sessionCookie);
-			isAuthenticated = Date.now() < expires;
-
-			if (!isAuthenticated) {
-				cookies.delete('auth_session', { path: '/' });
-			}
-		} catch (error) {
-			logger.error({ error }, 'Invalid session cookie');
+		isAuthenticated = validateSession(sessionCookie);
+		if (!isAuthenticated) {
 			cookies.delete('auth_session', { path: '/' });
 		}
 	}
@@ -50,7 +44,7 @@ export const actions: Actions = {
 	addPiHoleInstance: async ({ request, cookies }) => {
 		// Check authentication
 		const sessionCookie = cookies.get('auth_session');
-		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+		if (!sessionCookie || !validateSession(sessionCookie)) {
 			return fail(401, { error: 'Unauthorized' });
 		}
 		let theForm: Record<string, any> = addPiHoleInstanceExtractAndValidate(
@@ -91,7 +85,7 @@ export const actions: Actions = {
 	editPiHoleInstance: async ({ request, cookies }) => {
 		// Check authentication
 		const sessionCookie = cookies.get('auth_session');
-		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+		if (!sessionCookie || !validateSession(sessionCookie)) {
 			return fail(401, { error: 'Unauthorized' });
 		}
 		let theForm: Record<string, any> = editPiHoleInstanceExtractAndValidate(
@@ -120,7 +114,7 @@ export const actions: Actions = {
 	deletePiHoleInstance: async ({ request, cookies }) => {
 		// Check authentication
 		const sessionCookie = cookies.get('auth_session');
-		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+		if (!sessionCookie || !validateSession(sessionCookie)) {
 			return fail(401, { error: 'Unauthorized' });
 		}
 		let theForm: Record<string, any> = deletePiHoleInstanceExtractAndValidate(

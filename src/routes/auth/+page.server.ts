@@ -1,6 +1,7 @@
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 import currentPassword from '../../../config/password.json';
+import { createSession, validateSession } from '$lib/server/session';
 
 export const load: ServerLoad = async ({ cookies }) => {
 	// Check if user is already authenticated
@@ -8,15 +9,8 @@ export const load: ServerLoad = async ({ cookies }) => {
 	let isAuthenticated = false;
 
 	if (sessionCookie) {
-		try {
-			const expires = parseInt(sessionCookie);
-			isAuthenticated = Date.now() < expires;
-
-			if (!isAuthenticated) {
-				cookies.delete('auth_session', { path: '/' });
-			}
-		} catch (error) {
-			console.error('Invalid session cookie:', error);
+		isAuthenticated = validateSession(sessionCookie);
+		if (!isAuthenticated) {
 			cookies.delete('auth_session', { path: '/' });
 		}
 	}
@@ -38,10 +32,10 @@ export const actions: Actions = {
 		if (password !== currentPassword.password) {
 			return fail(401, { error: 'Invalid password' });
 		}
-		const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-		cookies.set('auth_session', Date.now() + 7 * 24 * 60 * 60 * 1000 + '', {
+		const token = createSession();
+		cookies.set('auth_session', token, {
 			path: '/',
-			expires,
+			expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
 			httpOnly: true,
 			secure: process.env.NODE_ENV === 'production',
 			sameSite: 'strict'

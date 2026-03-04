@@ -3,6 +3,7 @@ import { getSettings, saveSettings } from '$lib/models/settings';
 import type { SynchronizationMode } from '$lib/types/types';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { validateSession } from '$lib/server/session';
 
 export const load: PageServerLoad = async () => {
 	const settings = await getSettings();
@@ -15,7 +16,7 @@ export const actions: Actions = {
 	changeSettings: async ({ request, cookies }) => {
 		try {
 			const sessionCookie = cookies.get('auth_session');
-			if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+			if (!sessionCookie || !validateSession(sessionCookie)) {
 				return fail(401, { error: 'Unauthorized' });
 			}
 			const theForm = changeSettingsExtractAndValidate(await request.formData());
@@ -38,7 +39,7 @@ export const actions: Actions = {
 	changePassword: async ({ request, cookies }) => {
 		try {
 			const sessionCookie = cookies.get('auth_session');
-			if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+			if (!sessionCookie || !validateSession(sessionCookie)) {
 				return fail(401, { error: 'Unauthorized' });
 			}
 			const theForm = changePasswordExtractAndValidate(await request.formData());
