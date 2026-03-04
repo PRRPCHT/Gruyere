@@ -25,7 +25,7 @@
 	<link rel="icon" href={gruyere} />
 	<title>Gruyère</title>
 </svelte:head>
-<div class="mx-auto navbar flex max-w-6xl flex-row justify-between bg-base-100 shadow-sm">
+<div class="navbar mx-auto flex max-w-6xl flex-row justify-between bg-base-100 shadow-sm">
 	<div class="flex-none">
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->

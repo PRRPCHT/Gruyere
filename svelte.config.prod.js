@@ -11,7 +11,7 @@ const config = {
 		// Use Node.js adapter for production/Docker builds
 		adapter: adapter({
 			out: 'build',
-			precompress: false,
+			precompress: true, // Enable gzip/brotli compression for better performance
 			envPrefix: '',
 			polyfill: true
 		})

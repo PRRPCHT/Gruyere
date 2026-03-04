@@ -36,7 +36,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		};
 		return json({ success: updateSuccess, status: actionStatus });
 	} catch (error) {
-		logger.error('Error updating gravities', { error, instance: instance.name });
+		logger.error({ error, instance: instance.name }, 'Error updating gravities');
 		let actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
