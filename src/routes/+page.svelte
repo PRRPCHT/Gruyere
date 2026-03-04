@@ -97,9 +97,10 @@
 	}
 
 	let toasts: Toast[] = $state([]);
+	let nextToastId = 0;
 
 	function addToast(status: ActionStatus) {
-		let id = toasts.length + 1;
+		const id = ++nextToastId;
 		toasts.push({ id, status });
 		setTimeout(() => {
 			toasts = toasts.filter((toast) => toast.id !== id);
