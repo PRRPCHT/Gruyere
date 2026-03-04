@@ -12,7 +12,7 @@
 	import SuccessToast from '$lib/components/Toast.svelte';
 	let { data, form }: PageProps = $props();
 	let password = $state('');
-	let instanceRefreshInterval = $derived(
+	let instanceRefreshInterval = $state(
 		form?.instanceRefreshInterval
 			? form.instanceRefreshInterval
 			: data.settings.instanceRefreshInterval
