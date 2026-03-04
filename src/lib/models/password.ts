@@ -1,31 +1,55 @@
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
+
 const fs = await import('fs/promises');
 const path = await import('path');
 
-// Determine config directory - use /app/config in Docker, ./config in development
-const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
+const scryptAsync = promisify(scrypt);
+const SALT_LENGTH = 16;
+const KEY_LENGTH = 64;
 
-export async function getPassword(): Promise<string> {
+const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
+const passwordFilePath = () => path.join(configDir, 'password.json');
+
+export async function hashPassword(password: string): Promise<string> {
+	const salt = randomBytes(SALT_LENGTH).toString('hex');
+	const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+	return `${salt}:${derivedKey.toString('hex')}`;
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+	const [salt, storedKey] = hash.split(':');
+	const derivedKey = (await scryptAsync(password, salt, KEY_LENGTH)) as Buffer;
+	const storedBuffer = Buffer.from(storedKey, 'hex');
+	return timingSafeEqual(derivedKey, storedBuffer);
+}
+
+export async function isPasswordSet(): Promise<boolean> {
 	try {
-		const filePath = path.join(configDir, 'password.json');
-		const fileContent = await fs.readFile(filePath, 'utf-8');
-		const passwordData = JSON.parse(fileContent);
-		return passwordData.password as string;
-	} catch (error) {
-		console.error('Error reading password.json:', error);
-		// Return default password if file doesn't exist
-		return 'admin';
+		const content = await fs.readFile(passwordFilePath(), 'utf-8');
+		const data = JSON.parse(content);
+		return typeof data.hash === 'string' && data.hash.length > 0;
+	} catch {
+		return false;
+	}
+}
+
+export async function getPasswordHash(): Promise<string | null> {
+	try {
+		const content = await fs.readFile(passwordFilePath(), 'utf-8');
+		const data = JSON.parse(content);
+		return typeof data.hash === 'string' ? data.hash : null;
+	} catch {
+		return null;
 	}
 }
 
 export async function savePassword(newPassword: string): Promise<boolean> {
 	try {
-		await fs.writeFile(
-			path.join(configDir, 'password.json'),
-			JSON.stringify({ password: newPassword }, null, 2)
-		);
+		const hash = await hashPassword(newPassword);
+		await fs.writeFile(passwordFilePath(), JSON.stringify({ hash }, null, 2));
 		return true;
-	} catch (error) {
-		console.error('Error saving password.json:', error);
+	} catch {
 		return false;
 	}
 }

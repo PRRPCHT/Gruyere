@@ -48,7 +48,7 @@ export const actions: Actions = {
 			}
 			const password = theForm.password as string;
 			await savePassword(password);
-			return { success: true, passwordSaved: true, password: password };
+			return { success: true, passwordSaved: true };
 		} catch (error) {
 			console.error('Error saving password:', error);
 			return fail(500, { error: 'Error saving password' });
