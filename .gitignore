@@ -21,3 +21,9 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Config files with secrets (use templates instead)
+/config/password.json
+/config/instances.json
+/config/config.json
+!/config/*.example.json
