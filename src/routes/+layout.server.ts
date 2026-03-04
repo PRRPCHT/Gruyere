@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from './$types';
 import logger from '$lib/utils/logger';
+import { validateSession } from '$lib/server/session';
 
 export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	// Check for authentication session
@@ -7,16 +8,8 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 	let isAuthenticated = false;
 
 	if (sessionCookie) {
-		try {
-			const expires = parseInt(sessionCookie);
-			isAuthenticated = Date.now() < expires;
-
-			// If session expired, remove the cookie
-			if (!isAuthenticated) {
-				cookies.delete('auth_session', { path: '/' });
-			}
-		} catch (error) {
-			logger.error({ error }, 'Invalid session cookie');
+		isAuthenticated = validateSession(sessionCookie);
+		if (!isAuthenticated) {
 			cookies.delete('auth_session', { path: '/' });
 		}
 	}

@@ -9,11 +9,12 @@ import {
 import { getGroupsFromReference, updateGroupForInstance } from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import logger from '$lib/utils/logger';
+import { validateSession } from '$lib/server/session';
 
 export const POST: RequestHandler = async ({ cookies }) => {
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+	if (!sessionCookie || !validateSession(sessionCookie)) {
 		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',

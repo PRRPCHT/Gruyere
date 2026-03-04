@@ -3,11 +3,12 @@ import type { RequestHandler } from './$types';
 import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
 import { updateGravity } from '$lib/clients/pihole_client';
 import logger from '$lib/utils/logger';
+import { validateSession } from '$lib/server/session';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
-	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
+	if (!sessionCookie || !validateSession(sessionCookie)) {
 		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
