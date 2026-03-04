@@ -15,7 +15,7 @@
 	let editInstanceApiKey = $state(instance.apiKey);
 	let editIsReference = $state(instance.isReference);
 	let editInstanceId = $state(instance.id);
-	let form = $state<Record<string, any>>({});
+	let form = $state<Record<string, unknown>>({});
 	// Polling state management
 	let refreshInterval: NodeJS.Timeout | null = null;
 	let isRefreshing = $state(false);
@@ -91,6 +91,7 @@
 			<a
 				href={instance.url + '/admin'}
 				target="_blank"
+				rel="external"
 				class="link no-underline hover:text-secondary">{instance.url}</a
 			>
 		</div>
@@ -123,7 +124,7 @@
 				class="flex flex-col gap-2"
 				method="post"
 				action="?/editPiHoleInstance"
-				use:enhance={({ formElement, formData, action, cancel }) => {
+				use:enhance={() => {
 					return async ({
 						result,
 						update

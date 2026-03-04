@@ -10,7 +10,7 @@ import {
 } from '$lib/types/types';
 import logger from '$lib/utils/logger';
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ cookies }) => {
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const clientsFromReference = await getClientsFromReference(reference);
 		if (clientsFromReference !== null) {
-			let statuses: ActionStatus[] = [];
+			const statuses: ActionStatus[] = [];
 			const instances = await getPiHoleInstances();
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			{ error, reference: reference.name },
 			'Error updating the clients from the reference'
 		);
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: reference.name,
 			message: 'Failed to update the clients from the reference',

@@ -14,7 +14,7 @@
 		</div>
 	</div>
 	<div class="flex flex-col flex-wrap gap-6">
-		{#each instances as instance}
+		{#each instances as instance (instance.id)}
 			<InstanceStats {instance} />
 		{/each}
 	</div>

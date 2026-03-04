@@ -16,7 +16,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
 		logger.warn('Unauthorized access attempt to pause DNS blocking');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
 			message: 'Unauthorized',
@@ -25,23 +25,26 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
 
-	let {
-		duration,
+	const {
+		duration: rawDuration,
 		timeScale,
 		instance
-	}: { duration: number; timeScale: PauseDurationTimeScale; instance: PiHoleInstance } =
-		await request.json();
+	}: {
+		duration: number;
+		timeScale: PauseDurationTimeScale;
+		instance: PiHoleInstance;
+	} = await request.json();
 
-	if (!duration || duration <= 0 || !timeScale || !instance) {
+	if (!rawDuration || rawDuration <= 0 || !timeScale || !instance) {
 		logger.warn(
 			{
-				duration,
+				duration: rawDuration,
 				timeScale,
 				instance: instance?.name
 			},
 			'Invalid pause DNS blocking request parameters'
 		);
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance ? instance.name : 'Unknown instance',
 			message: 'Failed to pause DNS blocking',
@@ -50,14 +53,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: false, status: actionStatus });
 	}
 
-	duration = Math.round(duration);
+	const duration = Math.round(rawDuration);
 	logger.info(`Pausing DNS blocking for instance ${instance.name} for ${duration} ${timeScale}`);
 
 	let success = true;
 	try {
 		const pauseSuccess = await pauseDNSBlocking(instance, durationInSeconds(duration, timeScale));
 		success = success && pauseSuccess;
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: pauseSuccess,
 			instance: instance.name,
 			message: pauseSuccess
@@ -75,7 +78,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success, status: actionStatus });
 	} catch (error) {
 		logger.error({ error, instance: instance.name }, 'Error pausing DNS blocking');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
 			message: 'Failed to pause DNS blocking',

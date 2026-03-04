@@ -2,7 +2,7 @@
 	import Error from '$lib/components/Error.svelte';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
-	let { data, form }: PageProps = $props();
+	let { form }: PageProps = $props();
 	let password = $state('');
 	let isLoading = $state(false);
 </script>

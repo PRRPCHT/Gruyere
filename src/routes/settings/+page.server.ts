@@ -25,8 +25,8 @@ export const actions: Actions = {
 			}
 			console.log('Saving settings');
 			const settings = await getSettings();
-			settings.isRefreshInstance = theForm.isRefreshInstance;
-			settings.instanceRefreshInterval = theForm.instanceRefreshInterval;
+			settings.isRefreshInstance = theForm.isRefreshInstance as boolean;
+			settings.instanceRefreshInterval = theForm.instanceRefreshInterval as number;
 			settings.synchronizeWithReference = theForm.synchronizeWithReference as SynchronizationMode;
 			await saveSettings(settings);
 			return { success: true, settingsSaved: true, settings: settings };
@@ -45,7 +45,7 @@ export const actions: Actions = {
 			if (theForm.isError) {
 				return fail(400, theForm);
 			}
-			const password = theForm.password;
+			const password = theForm.password as string;
 			await savePassword(password);
 			return { success: true, passwordSaved: true, password: password };
 		} catch (error) {
@@ -55,15 +55,16 @@ export const actions: Actions = {
 	}
 } satisfies Actions;
 
-function changeSettingsExtractAndValidate(formData: FormData): Record<string, any> {
-	let theForm: Record<string, any> = {
+function changeSettingsExtractAndValidate(formData: FormData): Record<string, unknown> {
+	const theForm: Record<string, unknown> = {
 		isRefreshInstance: formData.get('isRefreshInstance') === 'on',
 		instanceRefreshInterval: parseInt(formData.get('instanceRefreshInterval') as string),
 		synchronizeWithReference: formData.get('synchronizeWithReference') as SynchronizationMode
 	};
 	theForm.missingInstanceRefreshInterval = theForm.instanceRefreshInterval === null;
 	theForm.invalidInstanceRefreshInterval =
-		isNaN(theForm.instanceRefreshInterval) || theForm.instanceRefreshInterval <= 0;
+		isNaN(theForm.instanceRefreshInterval as number) ||
+		(theForm.instanceRefreshInterval as number) <= 0;
 	theForm.missingSynchronizeWithReference = !theForm.synchronizeWithReference;
 	theForm.isError =
 		theForm.missingIsRefreshInstance ||
@@ -73,9 +74,9 @@ function changeSettingsExtractAndValidate(formData: FormData): Record<string, an
 	return theForm;
 }
 
-function changePasswordExtractAndValidate(formData: FormData): Record<string, any> {
+function changePasswordExtractAndValidate(formData: FormData): Record<string, unknown> {
 	const password = formData.get('password') as string;
-	const theForm: Record<string, any> = {
+	const theForm: Record<string, unknown> = {
 		password
 	};
 	theForm.invalidPassword = !password || password.length < 6;

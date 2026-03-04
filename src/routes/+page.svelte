@@ -1,11 +1,9 @@
 <script lang="ts">
 	import {
 		PauseDurationTimeScale,
-		PiHoleInstanceStatus,
 		type ActionStatus,
 		type PiHoleInstance,
-		type Toast,
-		type Settings
+		type Toast
 	} from '$lib/types/types';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
@@ -13,32 +11,13 @@
 	import SuccessToast from '$lib/components/Toast.svelte';
 	import Error from '$lib/components/Error.svelte';
 	import ActionButton from '$lib/components/ActionButton.svelte';
-	import { onMount, onDestroy } from 'svelte';
 	import InstanceItem from '$lib/components/InstanceItem.svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
-	let settings: Settings = $state(data.settings);
-
 	let showAddInstancePanel = $state(false);
 	let newInstanceName = $state('');
 	let newInstanceUrl = $state('');
 	let newInstanceApiKey = $state('');
-
-	let showEditInstancePanel = $state(false);
-	let editInstanceName = $state('');
-	let editInstanceUrl = $state('');
-	let editInstanceApiKey = $state('');
-	let editIsReference = $state(false);
-	let editInstanceId = $state(0);
-	function showEditModal(id: number) {
-		showEditInstancePanel = true;
-		const instance = piHoleInstances.find((instance) => instance.id === id);
-		editInstanceName = instance?.name || '';
-		editInstanceUrl = instance?.url || '';
-		editInstanceApiKey = instance?.apiKey || '';
-		editIsReference = instance?.isReference || false;
-		editInstanceId = instance?.id || 0;
-	}
 
 	let showPauseDNSBlockingPanel = $state(false);
 	let pauseDNSBlockingDuration = $state(1);
@@ -51,32 +30,6 @@
 
 	async function refreshInstances(newInstances: PiHoleInstance[]) {
 		piHoleInstances = newInstances;
-	}
-
-	async function refreshInstancesStatus() {
-		// Prevent multiple simultaneous calls
-		if (isRefreshing) {
-			console.log('Refresh already in progress, skipping...');
-			return;
-		}
-
-		isRefreshing = true;
-		console.log(new Date().toLocaleTimeString(), 'Calling refreshInstancesStatus');
-
-		try {
-			const result = await fetch('/api/refreshInstancesStatus', {
-				method: 'GET'
-			});
-			const data = await result.json();
-			if (data.success) {
-				piHoleInstances = data.instances;
-			}
-			console.log('Refreshed instances status');
-		} catch (error) {
-			console.error('Error refreshing instances status:', error);
-		} finally {
-			isRefreshing = false;
-		}
 	}
 
 	async function resumeDNSBlocking() {
@@ -141,34 +94,10 @@
 
 	let toasts: Toast[] = $state([]);
 
-	// Polling state management
-	let refreshInterval: NodeJS.Timeout | null = null;
-	let isRefreshing = $state(false);
-
-	function startPolling() {
-		if (refreshInterval) {
-			clearInterval(refreshInterval);
-		}
-
-		if (settings.isRefreshInstance) {
-			refreshInterval = setInterval(() => {
-				console.log('Refreshing instances status');
-				refreshInstancesStatus();
-			}, settings.instanceRefreshInterval * 1000);
-		}
-	}
-
-	function stopPolling() {
-		if (refreshInterval) {
-			clearInterval(refreshInterval);
-			refreshInterval = null;
-		}
-	}
-
 	function addToast(status: ActionStatus) {
 		let id = toasts.length + 1;
 		toasts.push({ id, status });
-		const timer = setTimeout(() => {
+		setTimeout(() => {
 			toasts = toasts.filter((toast) => toast.id !== id);
 		}, 5000);
 	}
@@ -272,15 +201,6 @@
 			});
 		}
 	}
-
-	onMount(() => {
-		//refreshInstancesStatus();
-		//startPolling();
-	});
-
-	onDestroy(() => {
-		//stopPolling();
-	});
 </script>
 
 <section class="mb-8 flex flex-col">
@@ -290,7 +210,7 @@
 		</div>
 	</div>
 
-	{#each piHoleInstances as piHoleInstance}
+	{#each piHoleInstances as piHoleInstance (piHoleInstance.id)}
 		<InstanceItem instance={piHoleInstance} {piHoleInstances} />
 	{/each}
 	<div class="flex flex-row justify-end">
@@ -310,7 +230,7 @@
 					class="flex flex-col gap-2"
 					method="post"
 					action="?/addPiHoleInstance"
-					use:enhance={({ formElement, formData, action, cancel }) => {
+					use:enhance={() => {
 						return async ({
 							result,
 							update
@@ -475,7 +395,7 @@
 						name="timeScale"
 						id="timeScale"
 					>
-						{#each Object.values(PauseDurationTimeScale) as timeScale}
+						{#each Object.values(PauseDurationTimeScale) as timeScale (timeScale)}
 							<option value={timeScale}>{timeScale}</option>
 						{/each}
 					</select>
@@ -498,7 +418,7 @@
 </section>
 <section class="flex flex-col gap-4">
 	<div class="toast flex flex-col gap-2">
-		{#each toasts as toast}
+		{#each toasts as toast (toast.id)}
 			<SuccessToast status={toast.status} />
 		{/each}
 	</div>

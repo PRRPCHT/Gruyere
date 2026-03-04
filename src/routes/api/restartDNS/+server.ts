@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
 		logger.warn('Unauthorized access attempt to restart DNS');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
 			message: 'Unauthorized',
@@ -20,10 +20,10 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: false, status: actionStatus }, { status: 401 });
 	}
 
-	let { instance }: { instance: PiHoleInstance } = await request.json();
+	const { instance }: { instance: PiHoleInstance } = await request.json();
 	if (!instance) {
 		logger.warn('Invalid restart DNS request - no instance provided');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: 'Unknown instance',
 			message: 'Failed to restart DNS',
@@ -37,7 +37,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	if (instance.status !== PiHoleInstanceStatus.ACTIVE) {
 		logger.warn(`Instance ${instance.name} is not active, status: ${instance.status}`);
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
 			message: 'Instance is unreachable. Check the instance status and your API key.',
@@ -48,7 +48,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		const restartSuccess = await restartDNS(instance);
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: restartSuccess,
 			instance: instance.name,
 			message: restartSuccess ? 'DNS restarted successfully' : 'Failed to restart DNS',
@@ -64,7 +64,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return json({ success: restartSuccess, status: actionStatus });
 	} catch (error) {
 		logger.error({ error, instance: instance.name }, 'Error restarting DNS');
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: instance.name,
 			message: 'Failed to restart DNS',

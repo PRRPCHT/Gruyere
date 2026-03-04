@@ -3,20 +3,14 @@ import type { RequestHandler } from './$types';
 import {
 	PiHoleInstanceStatus,
 	type ActionStatus,
-	type Group,
 	type List,
 	type PiHoleInstance
 } from '$lib/types/types';
-import {
-	getGroupsFromReference,
-	getListsFromReference,
-	updateGroupForInstance,
-	updateListForInstance
-} from '$lib/clients/pihole_client';
+import { getListsFromReference, updateListForInstance } from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import logger from '$lib/utils/logger';
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ cookies }) => {
 	// Check authentication
 	const sessionCookie = cookies.get('auth_session');
 	if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
@@ -43,7 +37,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	try {
 		const listsFromReference = await getListsFromReference(reference);
 		if (listsFromReference !== null) {
-			let statuses: ActionStatus[] = [];
+			const statuses: ActionStatus[] = [];
 			const instances = await getPiHoleInstances();
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
@@ -67,7 +61,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			{ error, reference: reference.name },
 			'Error getting the lists from the reference'
 		);
-		let actionStatus: ActionStatus = {
+		const actionStatus: ActionStatus = {
 			success: false,
 			instance: reference.name,
 			message: 'Failed to get the lists from the reference',

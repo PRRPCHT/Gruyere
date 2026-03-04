@@ -1,4 +1,4 @@
-import { authenticate, pauseDNSBlocking } from '$lib/clients/pihole_client';
+import { authenticate } from '$lib/clients/pihole_client';
 import {
 	deletePiHoleInstance,
 	editPiHoleInstance,
@@ -7,7 +7,7 @@ import {
 	savePiHoleInstances
 } from '$lib/models/pihole_instances';
 import { getSettings } from '$lib/models/settings';
-import { PiHoleInstanceStatus, type ActionStatus, type PiHoleInstance } from '$lib/types/types';
+import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 import logger from '$lib/utils/logger';
@@ -35,10 +35,7 @@ export const load: ServerLoad = async ({ cookies }) => {
 		throw redirect(302, '/auth');
 	}
 
-	let instances = await getPiHoleInstances();
-	instances.forEach((instance) => {
-		//instance.status = PiHoleInstanceStatus.REFRESHING;
-	});
+	const instances = await getPiHoleInstances();
 
 	return {
 		instances: instances,
@@ -53,7 +50,7 @@ export const actions: Actions = {
 		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
 			return fail(401, { error: 'Unauthorized' });
 		}
-		let theForm: Record<string, any> = addPiHoleInstanceExtractAndValidate(
+		const theForm: Record<string, unknown> = addPiHoleInstanceExtractAndValidate(
 			await request.formData()
 		);
 		if (theForm.isError) {
@@ -61,7 +58,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			let instances = await getPiHoleInstances();
+			const instances = await getPiHoleInstances();
 			const isReference = instances.length === 0;
 
 			// Add instance using singleton
@@ -94,7 +91,7 @@ export const actions: Actions = {
 		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
 			return fail(401, { error: 'Unauthorized' });
 		}
-		let theForm: Record<string, any> = editPiHoleInstanceExtractAndValidate(
+		const theForm: Record<string, unknown> = editPiHoleInstanceExtractAndValidate(
 			await request.formData()
 		);
 		if (theForm.isError) {
@@ -102,11 +99,11 @@ export const actions: Actions = {
 		}
 		try {
 			const newInstances = await editPiHoleInstance(
-				parseInt(theForm.id),
-				theForm.name,
-				theForm.url,
-				theForm.apiKey,
-				theForm.isReference
+				parseInt(theForm.id as string),
+				theForm.name as string,
+				theForm.url as string,
+				theForm.apiKey as string,
+				theForm.isReference as boolean
 			);
 			return {
 				success: true,
@@ -123,14 +120,14 @@ export const actions: Actions = {
 		if (!sessionCookie || Date.now() >= parseInt(sessionCookie)) {
 			return fail(401, { error: 'Unauthorized' });
 		}
-		let theForm: Record<string, any> = deletePiHoleInstanceExtractAndValidate(
+		const theForm: Record<string, unknown> = deletePiHoleInstanceExtractAndValidate(
 			await request.formData()
 		);
 		if (theForm.isError) {
 			return fail(400, theForm);
 		}
 		try {
-			const newInstances = await deletePiHoleInstance(parseInt(theForm.id));
+			const newInstances = await deletePiHoleInstance(parseInt(theForm.id as string));
 			return {
 				success: true,
 				instances: newInstances
@@ -149,12 +146,12 @@ function clean(element: string | null | undefined): string | null | undefined {
 	return element.trim();
 }
 
-function addPiHoleInstanceExtractAndValidate(formData: FormData): Record<string, any> {
+function addPiHoleInstanceExtractAndValidate(formData: FormData): Record<string, unknown> {
 	const name = clean(formData.get('name') as string);
 	const url = clean(formData.get('url') as string);
 	const apiKey = clean(formData.get('apiKey') as string);
 
-	let theForm: Record<string, any> = {
+	const theForm: Record<string, unknown> = {
 		name,
 		url,
 		apiKey
@@ -169,14 +166,14 @@ function addPiHoleInstanceExtractAndValidate(formData: FormData): Record<string,
 	return theForm;
 }
 
-function editPiHoleInstanceExtractAndValidate(formData: FormData): Record<string, any> {
+function editPiHoleInstanceExtractAndValidate(formData: FormData): Record<string, unknown> {
 	const id = clean(formData.get('id') as string);
 	const name = clean(formData.get('name') as string);
 	const url = clean(formData.get('url') as string);
 	const apiKey = clean(formData.get('apiKey') as string);
 	const isReference = formData.get('isReference') === 'true';
 
-	let theForm: Record<string, any> = {
+	const theForm: Record<string, unknown> = {
 		id,
 		name,
 		url,
@@ -193,10 +190,10 @@ function editPiHoleInstanceExtractAndValidate(formData: FormData): Record<string
 	return theForm;
 }
 
-function deletePiHoleInstanceExtractAndValidate(formData: FormData): Record<string, any> {
+function deletePiHoleInstanceExtractAndValidate(formData: FormData): Record<string, unknown> {
 	const id = clean(formData.get('id') as string);
 
-	let theForm: Record<string, any> = {
+	const theForm: Record<string, unknown> = {
 		id
 	};
 

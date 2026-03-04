@@ -2,7 +2,6 @@ import { updatePiHoleInstanceCredentials } from '$lib/models/pihole_instances';
 import type { Client, Domain, Group, List, PiHoleInstance, Stats } from '$lib/types/types';
 import { PiHoleInstanceStatus } from '$lib/types/types';
 import logger from '$lib/utils/logger';
-import type { group } from 'console';
 
 // Check if the token is still valid and update the instance credentials if needed
 // @param instance - The instance to check authentication for
@@ -18,12 +17,12 @@ export async function checkAuthentication(instance: PiHoleInstance): Promise<PiH
 			signal: AbortSignal.timeout(3000)
 		});
 		if (response.status !== 200) {
-			let toReturn = await authenticate(instance);
+			const toReturn = await authenticate(instance);
 			await updatePiHoleInstanceCredentials(instance);
 			return toReturn;
 		}
 		return PiHoleInstanceStatus.ACTIVE;
-	} catch (error: any) {
+	} catch (error: unknown) {
 		checkError(error, instance, 'Error checking authentication');
 		return PiHoleInstanceStatus.UNREACHABLE;
 	}
@@ -167,7 +166,7 @@ export async function restartDNS(instance: PiHoleInstance): Promise<boolean> {
 export async function getGroupsFromReference(instance: PiHoleInstance): Promise<Group[] | null> {
 	console.log('Getting groups from reference for Pi-hole', instance.name);
 	try {
-		let instanceStatus = await checkAuthentication(instance);
+		const instanceStatus = await checkAuthentication(instance);
 		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
 			throw new Error('Instance is not active');
 		}
@@ -438,17 +437,17 @@ export async function getStats(instance: PiHoleInstance): Promise<Stats> {
 // @param error - The error to check
 // @param instance - The instance to check the error for
 // @param message - The message to display
-function checkError(error: any, instance: PiHoleInstance, message: string) {
+function checkError(error: unknown, instance: PiHoleInstance, message: string) {
 	instance.status = PiHoleInstanceStatus.UNREACHABLE;
+	const err = error as Error & { cause?: { code?: string } };
 	if (
-		//EHOSTUNREACH
-		error.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
-		error.cause?.code === 'EHOSTDOWN' ||
-		error.cause?.code === 'ECONNREFUSED' ||
-		error.message.includes('timeout') ||
-		error.message.includes('UND_ERR_CONNECT_TIMEOUT') ||
-		error.message.includes('EHOSTDOWN') ||
-		error.message.includes('ECONNREFUSED')
+		err.cause?.code === 'UND_ERR_CONNECT_TIMEOUT' ||
+		err.cause?.code === 'EHOSTDOWN' ||
+		err.cause?.code === 'ECONNREFUSED' ||
+		err.message?.includes('timeout') ||
+		err.message?.includes('UND_ERR_CONNECT_TIMEOUT') ||
+		err.message?.includes('EHOSTDOWN') ||
+		err.message?.includes('ECONNREFUSED')
 	) {
 		console.error(instance.name, '- Connection timeout or host unreachable');
 	} else {

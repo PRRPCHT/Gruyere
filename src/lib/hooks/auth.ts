@@ -1,4 +1,5 @@
 import { goto } from '$app/navigation';
+import { resolve } from '$app/paths';
 import { authStore } from '$lib/stores/auth';
 import { browser } from '$app/environment';
 
@@ -9,7 +10,7 @@ export function requireAuth() {
 
 	const unsubscribe = authStore.subscribe((state) => {
 		if (!state.isAuthenticated) {
-			goto('/auth');
+			goto(resolve('/auth'));
 		}
 	});
 
@@ -23,7 +24,7 @@ export function redirectIfAuthenticated() {
 
 	const unsubscribe = authStore.subscribe((state) => {
 		if (state.isAuthenticated) {
-			goto('/');
+			goto(resolve('/'));
 		}
 	});
 
