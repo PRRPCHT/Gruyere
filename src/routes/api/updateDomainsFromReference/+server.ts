@@ -56,7 +56,7 @@ export const POST: RequestHandler = async () => {
 		message: "Couldn't update the domains from the reference",
 		instanceStatus: reference.status
 	};
-	return json({ success: true, status: actionStatus, statuses: null });
+	return json({ success: false, status: actionStatus, statuses: null }, { status: 502 });
 };
 
 // Update the clients for the instance
