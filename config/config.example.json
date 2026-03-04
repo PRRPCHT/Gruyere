@@ -1,0 +1,5 @@
+{
+  "isRefreshInstance": true,
+  "instanceRefreshInterval": 30,
+  "synchronizeWithReference": "partial"
+}

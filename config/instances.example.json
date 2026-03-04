@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "Pi-hole Main",
+    "url": "http://192.168.1.100",
+    "apiKey": "your-pihole-api-key-here",
+    "isReference": true,
+    "sid": "",
+    "csrf": "",
+    "status": "active"
+  }
+]
