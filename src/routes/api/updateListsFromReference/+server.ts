@@ -6,7 +6,11 @@ import {
 	type List,
 	type PiHoleInstance
 } from '$lib/types/types';
-import { getListsFromReference, updateListForInstance } from '$lib/clients/pihole_client';
+import {
+	checkAuthentication,
+	getListsFromReference,
+	updateListForInstance
+} from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import logger from '$lib/utils/logger';
 export const POST: RequestHandler = async () => {
@@ -26,7 +30,6 @@ export const POST: RequestHandler = async () => {
 		const listsFromReference = await getListsFromReference(reference);
 		if (listsFromReference !== null) {
 			const statuses: ActionStatus[] = [];
-			const instances = await getPiHoleInstances();
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
 					const actionStatus = await updateListsForInstance(instance, listsFromReference);
@@ -69,8 +72,7 @@ async function updateListsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating lists for instance');
 	try {
-		let updateSuccess = true;
-		const status = instance.status;
+		const status = await checkAuthentication(instance);
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
 				success: false,
@@ -80,9 +82,10 @@ async function updateListsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const list of listsFromReference) {
-			updateSuccess = updateSuccess && (await updateListForInstance(instance, list));
-		}
+		const results = await Promise.all(
+			listsFromReference.map((list) => updateListForInstance(instance, list))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,

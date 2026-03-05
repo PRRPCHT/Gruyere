@@ -1,11 +1,34 @@
 import { authenticate } from '$lib/clients/pihole_client';
 import type { PiHoleInstance } from '$lib/types/types';
+import { atomicWriteFile } from '$lib/utils/fs';
 
 const fs = await import('fs/promises');
 const path = await import('path');
 
 // Determine config directory - use /app/config in Docker, ./config in development
 const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
+
+// Promise-chain mutex to serialize read-modify-write operations on instances.json.
+// Prevents concurrent writes from overwriting each other's changes.
+let instancesLock: Promise<void> = Promise.resolve();
+
+// Acquire the mutex and run a callback that performs read-modify-write operations.
+// @param fn - The callback to run while holding the lock
+// @returns the value returned by the callback
+async function withInstancesLock<T>(fn: () => Promise<T>): Promise<T> {
+	let release: () => void;
+	const next = new Promise<void>((resolve) => {
+		release = resolve;
+	});
+	const prev = instancesLock;
+	instancesLock = next;
+	await prev;
+	try {
+		return await fn();
+	} finally {
+		release!();
+	}
+}
 
 export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 	try {
@@ -21,7 +44,7 @@ export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 export async function savePiHoleInstances(instances: PiHoleInstance[]): Promise<boolean> {
 	try {
 		const filePath = path.join(configDir, 'instances.json');
-		await fs.writeFile(filePath, JSON.stringify(instances, null, 2));
+		await atomicWriteFile(filePath, JSON.stringify(instances, null, 2));
 		return true;
 	} catch (error) {
 		console.error('Error saving instances.json:', error);
@@ -34,14 +57,16 @@ export function getNextId(instances: PiHoleInstance[]): number {
 }
 
 export async function deletePiHoleInstance(id: number): Promise<PiHoleInstance[]> {
-	const instances = await getPiHoleInstances();
-	const toDelete = instances.find((instance) => instance.id === id);
-	const newInstances = instances.filter((instance) => instance.id !== id);
-	if (toDelete?.isReference && newInstances.length >= 1) {
-		newInstances[0].isReference = true;
-	}
-	await savePiHoleInstances(newInstances);
-	return newInstances;
+	return withInstancesLock(async () => {
+		const instances = await getPiHoleInstances();
+		const toDelete = instances.find((instance) => instance.id === id);
+		const newInstances = instances.filter((instance) => instance.id !== id);
+		if (toDelete?.isReference && newInstances.length >= 1) {
+			newInstances[0].isReference = true;
+		}
+		await savePiHoleInstances(newInstances);
+		return newInstances;
+	});
 }
 
 export async function editPiHoleInstance(
@@ -51,58 +76,64 @@ export async function editPiHoleInstance(
 	apiKey: string | undefined,
 	isReference: boolean
 ): Promise<PiHoleInstance[]> {
-	const instances = await getPiHoleInstances();
-	const preInstance = instances.find((instance) => instance.id === id);
-	if (!preInstance) {
-		throw new Error('Instance not found');
-	}
-	const resolvedApiKey = apiKey ?? preInstance.apiKey;
-	let newInstances: PiHoleInstance[] = instances.map((instance) =>
-		instance.id === id ? { ...instance, name, url, apiKey: resolvedApiKey, isReference } : instance
-	);
-	if (preInstance.url !== url || preInstance.apiKey !== resolvedApiKey) {
-		preInstance.url = url;
-		preInstance.apiKey = resolvedApiKey;
-		await authenticate(preInstance);
-		newInstances = newInstances.map((instance) =>
-			instance.id === id ? { ...instance, status: preInstance.status } : instance
+	return withInstancesLock(async () => {
+		const instances = await getPiHoleInstances();
+		const preInstance = instances.find((instance) => instance.id === id);
+		if (!preInstance) {
+			throw new Error('Instance not found');
+		}
+		const resolvedApiKey = apiKey ?? preInstance.apiKey;
+		let newInstances: PiHoleInstance[] = instances.map((instance) =>
+			instance.id === id
+				? { ...instance, name, url, apiKey: resolvedApiKey, isReference }
+				: instance
 		);
-	}
-	if (preInstance.isReference !== isReference) {
-		preInstance.isReference = isReference;
-		if (isReference) {
+		if (preInstance.url !== url || preInstance.apiKey !== resolvedApiKey) {
+			preInstance.url = url;
+			preInstance.apiKey = resolvedApiKey;
+			await authenticate(preInstance);
 			newInstances = newInstances.map((instance) =>
-				instance.id === id
-					? { ...instance, isReference: true }
-					: { ...instance, isReference: false }
+				instance.id === id ? { ...instance, status: preInstance.status } : instance
 			);
-		} else {
-			newInstances = newInstances.map((instance) =>
-				instance.id === id ? { ...instance, isReference: false } : instance
-			);
-			const nextReference = newInstances.find((instance) => instance.id !== id);
-			if (nextReference) {
-				nextReference.isReference = true;
+		}
+		if (preInstance.isReference !== isReference) {
+			preInstance.isReference = isReference;
+			if (isReference) {
+				newInstances = newInstances.map((instance) =>
+					instance.id === id
+						? { ...instance, isReference: true }
+						: { ...instance, isReference: false }
+				);
+			} else {
+				newInstances = newInstances.map((instance) =>
+					instance.id === id ? { ...instance, isReference: false } : instance
+				);
+				const nextReference = newInstances.find((instance) => instance.id !== id);
+				if (nextReference) {
+					nextReference.isReference = true;
+				}
 			}
 		}
-	}
-	await savePiHoleInstances(newInstances);
-	return newInstances;
+		await savePiHoleInstances(newInstances);
+		return newInstances;
+	});
 }
 
 export async function updatePiHoleInstanceCredentials(instance: PiHoleInstance) {
-	try {
-		const instances = await getPiHoleInstances();
-		if (!instances.find((i) => i.id === instance.id)) {
-			throw new Error('Instance not found');
+	await withInstancesLock(async () => {
+		try {
+			const instances = await getPiHoleInstances();
+			if (!instances.find((i) => i.id === instance.id)) {
+				throw new Error('Instance not found');
+			}
+			const newInstances = instances.map((toEdit) =>
+				toEdit.id === instance.id
+					? { ...toEdit, status: instance.status, sid: instance.sid, csrf: instance.csrf }
+					: toEdit
+			);
+			await savePiHoleInstances(newInstances);
+		} catch (error) {
+			console.error('Error updating instance credentials:', error);
 		}
-		const newInstances = instances.map((toEdit) =>
-			toEdit.id === instance.id
-				? { ...toEdit, status: instance.status, sid: instance.sid, csrf: instance.csrf }
-				: toEdit
-		);
-		await savePiHoleInstances(newInstances);
-	} catch (error) {
-		console.error('Error updating instance credentials:', error);
-	}
+	});
 }

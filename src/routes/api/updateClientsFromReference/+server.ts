@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
-import { getClientsFromReference, updateClientForInstance } from '$lib/clients/pihole_client';
+import {
+	checkAuthentication,
+	getClientsFromReference,
+	updateClientForInstance
+} from '$lib/clients/pihole_client';
 import {
 	PiHoleInstanceStatus,
 	type ActionStatus,
@@ -26,7 +30,6 @@ export const POST: RequestHandler = async () => {
 		const clientsFromReference = await getClientsFromReference(reference);
 		if (clientsFromReference !== null) {
 			const statuses: ActionStatus[] = [];
-			const instances = await getPiHoleInstances();
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
 					const actionStatus = await updateClientsForInstance(instance, clientsFromReference);
@@ -69,8 +72,7 @@ async function updateClientsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating clients for instance');
 	try {
-		let updateSuccess = true;
-		const status = instance.status;
+		const status = await checkAuthentication(instance);
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
 				success: false,
@@ -80,9 +82,10 @@ async function updateClientsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const client of clientsFromReference) {
-			updateSuccess = updateSuccess && (await updateClientForInstance(instance, client));
-		}
+		const results = await Promise.all(
+			clientsFromReference.map((client) => updateClientForInstance(instance, client))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,

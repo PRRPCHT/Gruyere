@@ -6,7 +6,11 @@ import {
 	type Group,
 	type PiHoleInstance
 } from '$lib/types/types';
-import { getGroupsFromReference, updateGroupForInstance } from '$lib/clients/pihole_client';
+import {
+	checkAuthentication,
+	getGroupsFromReference,
+	updateGroupForInstance
+} from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import logger from '$lib/utils/logger';
 export const POST: RequestHandler = async () => {
@@ -26,7 +30,6 @@ export const POST: RequestHandler = async () => {
 		const groupsFromReference = await getGroupsFromReference(reference);
 		if (groupsFromReference !== null) {
 			const statuses: ActionStatus[] = [];
-			const instances = await getPiHoleInstances();
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
 					const actionStatus = await updateGroupsForInstance(instance, groupsFromReference);
@@ -70,8 +73,7 @@ async function updateGroupsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating groups for instance');
 	try {
-		let updateSuccess = true;
-		const status = instance.status;
+		const status = await checkAuthentication(instance);
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
 				success: false,
@@ -81,9 +83,10 @@ async function updateGroupsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const group of groupsFromReference) {
-			updateSuccess = updateSuccess && (await updateGroupForInstance(instance, group));
-		}
+		const results = await Promise.all(
+			groupsFromReference.map((group) => updateGroupForInstance(instance, group))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,

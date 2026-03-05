@@ -3,18 +3,27 @@ import type { Client, Domain, Group, List, PiHoleInstance, Stats } from '$lib/ty
 import { PiHoleInstanceStatus } from '$lib/types/types';
 import logger from '$lib/utils/logger';
 
+const PIHOLE_TIMEOUT_MS = 3000;
+
+// Fetch wrapper that applies a consistent timeout to all Pi-hole API calls
+// @param url - The URL to fetch
+// @param init - The fetch options
+// @returns the fetch response
+function piholeFetch(url: string, init?: RequestInit): Promise<Response> {
+	return fetch(url, { ...init, signal: AbortSignal.timeout(PIHOLE_TIMEOUT_MS) });
+}
+
 // Check if the token is still valid and update the instance credentials if needed
 // @param instance - The instance to check authentication for
 // @returns true if the authentication is valid, false otherwise
 export async function checkAuthentication(instance: PiHoleInstance): Promise<PiHoleInstanceStatus> {
 	try {
-		const response = await fetch(`${instance.url}/api/auth`, {
+		const response = await piholeFetch(`${instance.url}/api/auth`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
 				sid: instance.sid
-			},
-			signal: AbortSignal.timeout(3000)
+			}
 		});
 		if (response.status !== 200) {
 			const toReturn = await authenticate(instance);
@@ -34,12 +43,11 @@ export async function checkAuthentication(instance: PiHoleInstance): Promise<PiH
 export async function authenticate(instance: PiHoleInstance): Promise<PiHoleInstanceStatus> {
 	console.log('Authenticating with Pi-hole', instance.name);
 	try {
-		const response = await fetch(`${instance.url}/api/auth`, {
+		const response = await piholeFetch(`${instance.url}/api/auth`, {
 			method: 'POST',
 			body: JSON.stringify({
 				password: instance.apiKey
-			}),
-			signal: AbortSignal.timeout(3000)
+			})
 		});
 		if (response.status === 401 || response.status === 403) {
 			instance.status = PiHoleInstanceStatus.UNAUTHORIZED;
@@ -80,7 +88,7 @@ export async function pauseDNSBlocking(
 			);
 			return false;
 		}
-		const response = await fetch(`${instance.url}/api/dns/blocking`, {
+		const response = await piholeFetch(`${instance.url}/api/dns/blocking`, {
 			method: 'POST',
 			body: JSON.stringify({
 				csrf: instance.csrf,
@@ -103,7 +111,7 @@ export async function resumeDNSBlocking(instance: PiHoleInstance): Promise<boole
 	console.log('Activating DNS blocking for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/dns/blocking`, {
+		const response = await piholeFetch(`${instance.url}/api/dns/blocking`, {
 			method: 'POST',
 			body: JSON.stringify({
 				csrf: instance.csrf,
@@ -125,7 +133,7 @@ export async function updateGravity(instance: PiHoleInstance): Promise<boolean> 
 	console.log('Updating gravity for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/action/gravity`, {
+		const response = await piholeFetch(`${instance.url}/api/action/gravity`, {
 			method: 'POST',
 			body: JSON.stringify({
 				csrf: instance.csrf,
@@ -146,7 +154,7 @@ export async function restartDNS(instance: PiHoleInstance): Promise<boolean> {
 	console.log('Restarting DNS for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/action/restartdns`, {
+		const response = await piholeFetch(`${instance.url}/api/action/restartdns`, {
 			method: 'POST',
 			body: JSON.stringify({
 				csrf: instance.csrf,
@@ -171,7 +179,7 @@ export async function getGroupsFromReference(instance: PiHoleInstance): Promise<
 		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
 			throw new Error('Instance is not active');
 		}
-		const response = await fetch(`${instance.url}/api/groups`, {
+		const response = await piholeFetch(`${instance.url}/api/groups`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -198,8 +206,7 @@ export async function updateGroupForInstance(
 	group: Group
 ): Promise<boolean> {
 	try {
-		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/groups/${group.name}`, {
+		const response = await piholeFetch(`${instance.url}/api/groups/${group.name}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -226,7 +233,7 @@ export async function getListsFromReference(instance: PiHoleInstance): Promise<L
 	console.log('Getting lists from reference for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/lists`, {
+		const response = await piholeFetch(`${instance.url}/api/lists`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -254,8 +261,7 @@ export async function updateListForInstance(
 ): Promise<boolean> {
 	console.log('Updating list for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/lists/${list.address}`, {
+		const response = await piholeFetch(`${instance.url}/api/lists/${list.address}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -286,7 +292,7 @@ export async function getDomainsFromReference(instance: PiHoleInstance): Promise
 	console.log('Getting domains from reference for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/domains`, {
+		const response = await piholeFetch(`${instance.url}/api/domains`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -314,7 +320,6 @@ export async function updateDomainForInstance(
 ): Promise<boolean> {
 	console.log('Updating domain for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
 		const response = await fetch(
 			`${instance.url}/api/domains/${domain.type}/${domain.kind}/${domain.domain}`,
 			{
@@ -351,7 +356,7 @@ export async function getClientsFromReference(instance: PiHoleInstance): Promise
 	console.log('Getting clients from reference for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/clients`, {
+		const response = await piholeFetch(`${instance.url}/api/clients`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
@@ -379,8 +384,7 @@ export async function updateClientForInstance(
 ): Promise<boolean> {
 	console.log('Updating client for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/clients/${client.client}`, {
+		const response = await piholeFetch(`${instance.url}/api/clients/${client.client}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json',
@@ -406,7 +410,7 @@ export async function getStats(instance: PiHoleInstance): Promise<Stats> {
 	console.log('Getting stats for Pi-hole', instance.name);
 	try {
 		await checkAuthentication(instance);
-		const response = await fetch(`${instance.url}/api/stats/summary`, {
+		const response = await piholeFetch(`${instance.url}/api/stats/summary`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json',
