@@ -1,9 +1,9 @@
 <script lang="ts">
 	import StatItem from './StatItem.svelte';
-	import { PiHoleInstanceStatus, type PiHoleInstance, type Stats } from '$lib/types/types';
+	import { PiHoleInstanceStatus, type ClientPiHoleInstance, type Stats } from '$lib/types/types';
 	import { onDestroy, onMount } from 'svelte';
 
-	let { instance }: { instance: PiHoleInstance } = $props();
+	let { instance }: { instance: ClientPiHoleInstance } = $props();
 	let stats = $state<Stats | null>(null);
 	let instanceStatus = $state<PiHoleInstanceStatus>(instance.status);
 	let isRefreshing = $state(true);
@@ -74,7 +74,7 @@
 				<a
 					href={instance.url + '/admin'}
 					target="_blank"
-					rel="external"
+					rel="noopener noreferrer"
 					class="link no-underline hover:text-secondary">{instance.url}</a
 				>
 			</div>

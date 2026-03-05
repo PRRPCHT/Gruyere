@@ -7,7 +7,7 @@ import {
 	savePiHoleInstances
 } from '$lib/models/pihole_instances';
 import { getSettings } from '$lib/models/settings';
-import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
+import { PiHoleInstanceStatus, type PiHoleInstance, toClientInstances } from '$lib/types/types';
 import type { Actions, ServerLoad } from '@sveltejs/kit';
 import { fail } from '@sveltejs/kit';
 import logger from '$lib/utils/logger';
@@ -16,11 +16,11 @@ export const load: ServerLoad = async () => {
 	const instances = await getPiHoleInstances();
 
 	return {
-		instances: instances,
+		instances: toClientInstances(instances),
 		settings: await getSettings()
 	};
 };
-//bamcRAdfwFqecE0HjDLgLqfGon5Y6TykFIIEvrN3mf0=
+
 export const actions: Actions = {
 	addPiHoleInstance: async ({ request }) => {
 		const theForm: Record<string, unknown> = addPiHoleInstanceExtractAndValidate(
@@ -51,7 +51,7 @@ export const actions: Actions = {
 
 			return {
 				success: true,
-				instances: instances
+				instances: toClientInstances(instances)
 			};
 		} catch (error) {
 			logger.error({ error, formData: theForm }, 'Error adding PiHole instance');
@@ -70,12 +70,12 @@ export const actions: Actions = {
 				parseInt(theForm.id as string),
 				theForm.name as string,
 				theForm.url as string,
-				theForm.apiKey as string,
+				(theForm.apiKey as string) || undefined,
 				theForm.isReference as boolean
 			);
 			return {
 				success: true,
-				instances: newInstances
+				instances: toClientInstances(newInstances)
 			};
 		} catch (error) {
 			logger.error({ error, formData: theForm }, 'Error managing Pi-hole instance');
@@ -93,7 +93,7 @@ export const actions: Actions = {
 			const newInstances = await deletePiHoleInstance(parseInt(theForm.id as string));
 			return {
 				success: true,
-				instances: newInstances
+				instances: toClientInstances(newInstances)
 			};
 		} catch (error) {
 			logger.error({ error, formData: theForm }, 'Error managing Pi-hole instance');
@@ -146,10 +146,8 @@ function editPiHoleInstanceExtractAndValidate(formData: FormData): Record<string
 	theForm.missingName = !theForm.name;
 	theForm.missingId = !theForm.id;
 	theForm.missingUrl = !theForm.url;
-	theForm.missingApiKey = !theForm.apiKey;
 
-	theForm.isError =
-		theForm.missingName || theForm.missingUrl || theForm.missingApiKey || theForm.missingId;
+	theForm.isError = theForm.missingName || theForm.missingUrl || theForm.missingId;
 	return theForm;
 }
 

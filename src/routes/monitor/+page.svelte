@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { type PiHoleInstance } from '$lib/types/types';
+	import { type ClientPiHoleInstance } from '$lib/types/types';
 	import InstanceStats from '$lib/components/InstanceStats.svelte';
 
 	let { data }: PageProps = $props();
-	let instances: PiHoleInstance[] = $state(data.instances);
+	let instances: ClientPiHoleInstance[] = $state(data.instances);
 </script>
 
 <section class="flex flex-col">

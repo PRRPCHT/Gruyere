@@ -2,7 +2,7 @@
 	import {
 		PauseDurationTimeScale,
 		type ActionStatus,
-		type PiHoleInstance,
+		type ClientPiHoleInstance,
 		type Toast
 	} from '$lib/types/types';
 	import { enhance } from '$app/forms';
@@ -13,7 +13,7 @@
 	import ActionButton from '$lib/components/ActionButton.svelte';
 	import InstanceItem from '$lib/components/InstanceItem.svelte';
 	let { data, form }: PageProps = $props();
-	let piHoleInstances: PiHoleInstance[] = $state(data.instances);
+	let piHoleInstances: ClientPiHoleInstance[] = $state(data.instances);
 	let showAddInstancePanel = $state(false);
 	let newInstanceName = $state('');
 	let newInstanceUrl = $state('');
@@ -28,7 +28,7 @@
 	}
 	let pauseDNSBlockingError = $state(false);
 
-	async function refreshInstances(newInstances: PiHoleInstance[]) {
+	async function refreshInstances(newInstances: ClientPiHoleInstance[]) {
 		piHoleInstances = newInstances;
 	}
 
@@ -244,7 +244,10 @@
 							result,
 							update
 						}: {
-							result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
+							result: ActionResult<
+								{ success: boolean; instances: ClientPiHoleInstance[] },
+								undefined
+							>;
 							update: () => Promise<void>;
 						}) => {
 							await update();
@@ -294,7 +297,7 @@
 					<div class:text-error={form?.missingApiKey}>
 						<label class="label" for="instanceApiKey">API Key</label>
 						<input
-							type="text"
+							type="password"
 							class="input w-full rounded-none"
 							placeholder="1234567890"
 							bind:value={newInstanceApiKey}

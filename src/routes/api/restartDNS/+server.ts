@@ -8,7 +8,23 @@ import { getPiHoleInstances } from '$lib/models/pihole_instances';
 export const POST: RequestHandler = async ({ request }) => {
 	logger.info('DNS restart request received');
 
-	const { instanceId }: { instanceId: number } = await request.json();
+	let instanceId: number;
+	try {
+		({ instanceId } = await request.json());
+	} catch {
+		return json(
+			{
+				success: false,
+				status: {
+					success: false,
+					instance: 'Unknown instance',
+					message: 'Invalid request body',
+					instanceStatus: PiHoleInstanceStatus.UNREACHABLE
+				}
+			},
+			{ status: 400 }
+		);
+	}
 	if (!instanceId) {
 		logger.warn('Invalid restart DNS request - no instanceId provided');
 		const actionStatus: ActionStatus = {
