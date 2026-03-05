@@ -25,7 +25,7 @@
 
 	function addToast(success: boolean) {
 		const id = ++nextToastId;
-		const message = success ? 'Settings saved successfully' : 'Settings saved failed';
+		const message = success ? 'Settings saved successfully' : 'Failed to save settings';
 		let status: ActionStatus = {
 			success,
 			instance: 'Settings',

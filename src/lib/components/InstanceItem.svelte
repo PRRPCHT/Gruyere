@@ -8,7 +8,7 @@
 		instance,
 		piHoleInstances
 	}: { instance: PiHoleInstance; piHoleInstances: PiHoleInstance[] } = $props();
-	let instanceStatus = $state<PiHoleInstanceStatus>(instance.status);
+	let instanceStatus = $derived(instance.status);
 	let showEditInstancePanel = $state(false);
 	let editInstanceName = $state(instance.name);
 	let editInstanceUrl = $state(instance.url);
@@ -143,7 +143,6 @@
 							);
 							if (updatedInstance) {
 								instance = updatedInstance;
-								instanceStatus = updatedInstance.status;
 								editInstanceName = updatedInstance.name;
 								editInstanceUrl = updatedInstance.url;
 								editInstanceApiKey = updatedInstance.apiKey;
