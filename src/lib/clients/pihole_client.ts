@@ -38,7 +38,8 @@ export async function authenticate(instance: PiHoleInstance): Promise<PiHoleInst
 			method: 'POST',
 			body: JSON.stringify({
 				password: instance.apiKey
-			})
+			}),
+			signal: AbortSignal.timeout(3000)
 		});
 		if (response.status === 401 || response.status === 403) {
 			instance.status = PiHoleInstanceStatus.UNAUTHORIZED;
