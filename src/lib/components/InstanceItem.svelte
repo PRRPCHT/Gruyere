@@ -92,7 +92,7 @@
 			<a
 				href={instance.url + '/admin'}
 				target="_blank"
-				rel="external"
+				rel="noopener noreferrer"
 				class="link no-underline hover:text-secondary">{instance.url}</a
 			>
 		</div>
