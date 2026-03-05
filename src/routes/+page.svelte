@@ -297,7 +297,7 @@
 					<div class:text-error={form?.missingApiKey}>
 						<label class="label" for="instanceApiKey">API Key</label>
 						<input
-							type="text"
+							type="password"
 							class="input w-full rounded-none"
 							placeholder="1234567890"
 							bind:value={newInstanceApiKey}

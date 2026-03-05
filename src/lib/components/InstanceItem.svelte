@@ -187,7 +187,7 @@
 				<div class="flex flex-col gap-2">
 					<label class="label" for="instanceApiKey">API Key</label>
 					<input
-						type="text"
+						type="password"
 						class="input w-full rounded-none"
 						bind:value={editInstanceApiKey}
 						name="apiKey"
