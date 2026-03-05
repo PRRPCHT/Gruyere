@@ -29,12 +29,14 @@ The easiest way to deploy Gruyere is using Docker Compose:
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/yourusername/gruyere.git
    cd gruyere
    ```
 
 2. **Set up configuration files:**
+
    ```bash
    # Copy template files to create your config
    cp config/password.example.json config/password.json
@@ -45,18 +47,19 @@ The easiest way to deploy Gruyere is using Docker Compose:
 3. **Configure your Pi-hole instances:**
 
    Edit `config/instances.json` and add your Pi-hole instances:
+
    ```json
    [
-     {
-       "id": 1,
-       "name": "Pi-hole Main",
-       "url": "http://192.168.1.100",
-       "apiKey": "your-pihole-api-key-here",
-       "isReference": true,
-       "sid": "",
-       "csrf": "",
-       "status": "active"
-     }
+   	{
+   		"id": 1,
+   		"name": "Pi-hole Main",
+   		"url": "http://192.168.1.100",
+   		"apiKey": "your-pihole-api-key-here",
+   		"isReference": true,
+   		"sid": "",
+   		"csrf": "",
+   		"status": "active"
+   	}
    ]
    ```
 
@@ -68,20 +71,23 @@ The easiest way to deploy Gruyere is using Docker Compose:
 4. **Change the default password:**
 
    Edit `config/password.json`:
+
    ```json
    {
-     "password": "your-secure-password-here"
+   	"password": "your-secure-password-here"
    }
    ```
 
 5. **Configure environment variables (optional):**
 
    Create a `.env` file to customize settings:
+
    ```bash
    cp .env.example .env
    ```
 
    Edit `.env` and adjust as needed:
+
    ```bash
    # Set your actual domain/IP
    ORIGIN=http://192.168.1.50:3141
@@ -94,6 +100,7 @@ The easiest way to deploy Gruyere is using Docker Compose:
    ```
 
 6. **Start the application:**
+
    ```bash
    docker-compose up -d
    ```
@@ -132,21 +139,21 @@ The `config/config.json` file contains application settings:
 
 ```json
 {
-  "isRefreshInstance": true,           // Enable auto-refresh of instance status
-  "instanceRefreshInterval": 30,       // Refresh interval in seconds
-  "synchronizeWithReference": "partial" // Sync mode: "partial" or "complete"
+	"isRefreshInstance": true, // Enable auto-refresh of instance status
+	"instanceRefreshInterval": 30, // Refresh interval in seconds
+	"synchronizeWithReference": "partial" // Sync mode: "partial" or "complete"
 }
 ```
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `3141` | Port the application listens on |
-| `HOST` | `0.0.0.0` | Host binding (0.0.0.0 for all interfaces) |
-| `ORIGIN` | `http://localhost:3141` | Origin URL for CORS and security |
-| `NODE_ENV` | `production` | Node environment |
-| `LOG_LEVEL` | `info` | Log level (fatal, error, warn, info, debug, trace) |
+| Variable    | Default                 | Description                                        |
+| ----------- | ----------------------- | -------------------------------------------------- |
+| `PORT`      | `3141`                  | Port the application listens on                    |
+| `HOST`      | `0.0.0.0`               | Host binding (0.0.0.0 for all interfaces)          |
+| `ORIGIN`    | `http://localhost:3141` | Origin URL for CORS and security                   |
+| `NODE_ENV`  | `production`            | Node environment                                   |
+| `LOG_LEVEL` | `info`                  | Log level (fatal, error, warn, info, debug, trace) |
 
 ### Security Considerations
 
@@ -159,6 +166,7 @@ The `config/config.json` file contains application settings:
 ### Resource Limits
 
 The default docker-compose.yml sets resource limits:
+
 - **CPU**: 1 core max, 0.25 core reserved
 - **Memory**: 512MB max, 128MB reserved
 
@@ -173,6 +181,7 @@ Gruyere uses a "reference instance" pattern:
 3. Use Gruyere to sync those settings to other instances
 
 **Available sync operations:**
+
 - **Update Groups** - Sync group configurations
 - **Update Lists** - Sync blocklists and allowlists
 - **Update Clients** - Sync client group assignments
@@ -184,11 +193,13 @@ Gruyere uses a "reference instance" pattern:
 ### Container won't start
 
 Check logs:
+
 ```bash
 docker-compose logs gruyere
 ```
 
 Common issues:
+
 - Config files missing - ensure you copied the templates
 - Port 3141 already in use - change `PORT` in `.env`
 - Permission issues - ensure `./config` directory is writable
@@ -196,6 +207,7 @@ Common issues:
 ### Can't connect to Pi-hole instances
 
 1. **Check network connectivity:**
+
    ```bash
    docker-compose exec gruyere curl -v http://your-pihole-ip
    ```

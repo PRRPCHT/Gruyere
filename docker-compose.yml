@@ -38,15 +38,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'      # Limit to 1 CPU core
-          memory: 512M     # Limit to 512MB RAM
+          cpus: '1.0' # Limit to 1 CPU core
+          memory: 512M # Limit to 512MB RAM
         reservations:
-          cpus: '0.25'     # Reserve at least 0.25 CPU
-          memory: 128M     # Reserve at least 128MB RAM
+          cpus: '0.25' # Reserve at least 0.25 CPU
+          memory: 128M # Reserve at least 128MB RAM
 
     # Security options
     security_opt:
-      - no-new-privileges:true  # Prevent privilege escalation
+      - no-new-privileges:true # Prevent privilege escalation
 
     # Restart policy
     restart: unless-stopped
@@ -61,10 +61,10 @@ services:
 
     # Logging configuration
     logging:
-      driver: "json-file"
+      driver: 'json-file'
       options:
-        max-size: "10m"
-        max-file: "3"
+        max-size: '10m'
+        max-file: '3'
 
     # Network configuration
     networks:
