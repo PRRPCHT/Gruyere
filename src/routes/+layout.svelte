@@ -8,8 +8,9 @@
 	import type { Snippet } from 'svelte';
 	let { children, data }: { children: Snippet; data: LayoutData } = $props();
 
-	// Initialize auth store immediately with server data to prevent flicker
-	authStore.initialize(data.isAuthenticated);
+	$effect(() => {
+		authStore.initialize(data.isAuthenticated);
+	});
 	let showMenu = $state(false);
 
 	function goto(path: '/' | '/monitor' | '/settings') {
