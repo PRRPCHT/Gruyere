@@ -1,5 +1,6 @@
 import { authenticate } from '$lib/clients/pihole_client';
 import type { PiHoleInstance } from '$lib/types/types';
+import { atomicWriteFile } from '$lib/utils/fs';
 
 const fs = await import('fs/promises');
 const path = await import('path');
@@ -43,7 +44,7 @@ export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 export async function savePiHoleInstances(instances: PiHoleInstance[]): Promise<boolean> {
 	try {
 		const filePath = path.join(configDir, 'instances.json');
-		await fs.writeFile(filePath, JSON.stringify(instances, null, 2));
+		await atomicWriteFile(filePath, JSON.stringify(instances, null, 2));
 		return true;
 	} catch (error) {
 		console.error('Error saving instances.json:', error);

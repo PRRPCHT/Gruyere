@@ -1,4 +1,6 @@
 import type { Settings } from '$lib/types/types';
+import { atomicWriteFile } from '$lib/utils/fs';
+
 const fs = await import('fs/promises');
 const path = await import('path');
 
@@ -24,7 +26,10 @@ export async function getSettings(): Promise<Settings> {
 export async function saveSettings(newSettings: Settings): Promise<boolean> {
 	console.log('Saving settings:', newSettings);
 	try {
-		await fs.writeFile(path.join(configDir, 'config.json'), JSON.stringify(newSettings, null, 2));
+		await atomicWriteFile(
+			path.join(configDir, 'config.json'),
+			JSON.stringify(newSettings, null, 2)
+		);
 		return true;
 	} catch (error) {
 		console.error('Error saving config.json:', error);

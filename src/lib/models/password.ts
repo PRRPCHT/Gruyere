@@ -1,5 +1,6 @@
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
+import { atomicWriteFile } from '$lib/utils/fs';
 
 const fs = await import('fs/promises');
 const path = await import('path');
@@ -47,7 +48,7 @@ export async function getPasswordHash(): Promise<string | null> {
 export async function savePassword(newPassword: string): Promise<boolean> {
 	try {
 		const hash = await hashPassword(newPassword);
-		await fs.writeFile(passwordFilePath(), JSON.stringify({ hash }, null, 2));
+		await atomicWriteFile(passwordFilePath(), JSON.stringify({ hash }, null, 2));
 		return true;
 	} catch {
 		return false;
