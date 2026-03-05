@@ -20,7 +20,7 @@ export const load: ServerLoad = async () => {
 		settings: await getSettings()
 	};
 };
-//bamcRAdfwFqecE0HjDLgLqfGon5Y6TykFIIEvrN3mf0=
+
 export const actions: Actions = {
 	addPiHoleInstance: async ({ request }) => {
 		const theForm: Record<string, unknown> = addPiHoleInstanceExtractAndValidate(
