@@ -11,7 +11,7 @@
 	import SuccessToast from '$lib/components/Toast.svelte';
 	import Error from '$lib/components/Error.svelte';
 	import ActionButton from '$lib/components/ActionButton.svelte';
-	import InstanceItem from '$lib/components/InstanceItem.svelte';
+	import InstanceStats from '$lib/components/InstanceStats.svelte';
 	let { data, form }: PageProps = $props();
 	let piHoleInstances: ClientPiHoleInstance[] = $state(data.instances);
 	let showAddInstancePanel = $state(false);
@@ -212,16 +212,18 @@
 	}
 </script>
 
-<section class="mb-8 flex flex-col">
+<section class="mb-6 flex flex-col">
 	<div class="header flex flex-row justify-between p-2">
 		<div class="flex flex-row items-center gap-4 py-2">
 			<div class="ps-2 text-lg font-bold">Pi-hole Instances</div>
 		</div>
 	</div>
 
-	{#each piHoleInstances as piHoleInstance (piHoleInstance.id)}
-		<InstanceItem instance={piHoleInstance} {piHoleInstances} />
-	{/each}
+	<div class="mb-6 flex flex-col flex-wrap gap-6">
+		{#each piHoleInstances as piHoleInstance (piHoleInstance.id)}
+			<InstanceStats instance={piHoleInstance} {piHoleInstances} />
+		{/each}
+	</div>
 	<div class="flex flex-row justify-end">
 		<!-- <div class="tooltip tooltip-left" data-tip="Add a new Pi-hole instance"> -->
 		<button
@@ -320,7 +322,7 @@
 		</dialog>
 	{/if}
 </section>
-<section class="flex flex-col gap-12">
+<section class="flex flex-col gap-6">
 	<div>
 		<div class="header flex flex-row justify-between p-2">
 			<div class="flex flex-row items-center gap-4 py-2">

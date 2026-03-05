@@ -13,7 +13,7 @@
 	});
 	let showMenu = $state(false);
 
-	function goto(path: '/' | '/monitor' | '/settings') {
+	function goto(path: '/' | '/settings') {
 		showMenu = false;
 		sveltekitGoto(resolve(path));
 	}
@@ -63,7 +63,6 @@
 	<div class="flex hidden flex-none flex-row gap-2 md:block">
 		{#if $authStore.isAuthenticated}
 			<a class="btn btn-ghost" href={resolve('/')}>Dashboard</a>
-			<a class="btn btn-ghost" href={resolve('/monitor')}> Monitor </a>
 			<a class="btn btn-ghost" href={resolve('/settings')}> Settings </a>
 			<button class="btn btn-ghost" onclick={() => authStore.logout()}> Log out </button>
 		{/if}
@@ -72,7 +71,6 @@
 {#if showMenu && $authStore.isAuthenticated}
 	<div class="flex flex-col gap-2 p-6">
 		<button class="btn" onclick={() => goto('/')}>Dashboard</button>
-		<button class="btn" onclick={() => goto('/monitor')}>Monitor</button>
 		<button class="btn" onclick={() => goto('/settings')}>Settings</button>
 		<button class="btn" onclick={() => logout()}>Log out</button>
 	</div>
