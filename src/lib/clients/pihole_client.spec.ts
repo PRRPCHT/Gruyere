@@ -42,7 +42,7 @@ describe('authenticate', () => {
 	it('returns UNREACHABLE for the dead instance (.98)', async () => {
 		const result = await authenticate(deadInstance());
 		expect(result).toBe(PiHoleInstanceStatus.UNREACHABLE);
-	}, 10_000);
+	}, 5_000);
 });
 
 describe('checkAuthentication', () => {
