@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PiHoleInstanceStatus, type PiHoleInstance } from '$lib/types/types';
+	import { PiHoleInstanceStatus, type ClientPiHoleInstance } from '$lib/types/types';
 	import { enhance } from '$app/forms';
 	import type { ActionResult } from '@sveltejs/kit';
 	import Error from './Error.svelte';
@@ -7,12 +7,12 @@
 	let {
 		instance,
 		piHoleInstances
-	}: { instance: PiHoleInstance; piHoleInstances: PiHoleInstance[] } = $props();
+	}: { instance: ClientPiHoleInstance; piHoleInstances: ClientPiHoleInstance[] } = $props();
 	let instanceStatus = $derived(instance.status);
 	let showEditInstancePanel = $state(false);
 	let editInstanceName = $state(instance.name);
 	let editInstanceUrl = $state(instance.url);
-	let editInstanceApiKey = $state(instance.apiKey);
+	let editInstanceApiKey = $state('');
 	let editIsReference = $state(instance.isReference);
 	let editInstanceId = $state(instance.id);
 	let form = $state<Record<string, unknown>>({});
@@ -131,7 +131,7 @@
 						update
 					}: {
 						result: ActionResult<
-							{ success: boolean; instances: PiHoleInstance[] },
+							{ success: boolean; instances: ClientPiHoleInstance[] },
 							Record<string, unknown>
 						>;
 						update: () => Promise<void>;
@@ -145,7 +145,7 @@
 								instance = updatedInstance;
 								editInstanceName = updatedInstance.name;
 								editInstanceUrl = updatedInstance.url;
-								editInstanceApiKey = updatedInstance.apiKey;
+								editInstanceApiKey = '';
 								editIsReference = updatedInstance.isReference;
 							}
 							showEditInstancePanel = false;
@@ -161,9 +161,6 @@
 				{/if}
 				{#if form?.missingUrl}
 					<Error message="The URL field is required." />
-				{/if}
-				{#if form?.missingApiKey}
-					<Error message="The API key field is required." />
 				{/if}
 				<div class="flex flex-col gap-2" class:text-error={form?.missingName}>
 					<label class="label" for="instanceName">Instance name</label>
@@ -187,7 +184,7 @@
 						class:border-error={form?.missingUrl}
 					/>
 				</div>
-				<div class="flex flex-col gap-2" class:text-error={form?.missingApiKey}>
+				<div class="flex flex-col gap-2">
 					<label class="label" for="instanceApiKey">API Key</label>
 					<input
 						type="text"
@@ -195,7 +192,7 @@
 						bind:value={editInstanceApiKey}
 						name="apiKey"
 						id="instanceApiKey"
-						class:border-error={form?.missingApiKey}
+						placeholder="Leave empty to keep current key"
 					/>
 				</div>
 				{#if piHoleInstances.length > 1}

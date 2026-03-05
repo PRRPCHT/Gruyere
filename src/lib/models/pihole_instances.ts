@@ -48,7 +48,7 @@ export async function editPiHoleInstance(
 	id: number,
 	name: string,
 	url: string,
-	apiKey: string,
+	apiKey: string | undefined,
 	isReference: boolean
 ): Promise<PiHoleInstance[]> {
 	const instances = await getPiHoleInstances();
@@ -56,12 +56,13 @@ export async function editPiHoleInstance(
 	if (!preInstance) {
 		throw new Error('Instance not found');
 	}
+	const resolvedApiKey = apiKey ?? preInstance.apiKey;
 	let newInstances: PiHoleInstance[] = instances.map((instance) =>
-		instance.id === id ? { ...instance, name, url, apiKey, isReference } : instance
+		instance.id === id ? { ...instance, name, url, apiKey: resolvedApiKey, isReference } : instance
 	);
-	if (preInstance.url !== url || preInstance.apiKey !== apiKey) {
+	if (preInstance.url !== url || preInstance.apiKey !== resolvedApiKey) {
 		preInstance.url = url;
-		preInstance.apiKey = apiKey;
+		preInstance.apiKey = resolvedApiKey;
 		await authenticate(preInstance);
 		newInstances = newInstances.map((instance) =>
 			instance.id === id ? { ...instance, status: preInstance.status } : instance

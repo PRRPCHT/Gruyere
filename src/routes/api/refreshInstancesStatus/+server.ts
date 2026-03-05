@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getPiHoleInstances, savePiHoleInstances } from '$lib/models/pihole_instances';
 import { checkAuthentication } from '$lib/clients/pihole_client';
+import { toClientInstances } from '$lib/types/types';
 import logger from '$lib/utils/logger';
 export const GET: RequestHandler = async () => {
 	logger.info('Refreshing instances status');
@@ -29,5 +30,5 @@ export const GET: RequestHandler = async () => {
 	}
 
 	logger.info('Successfully refreshed instances status');
-	return json({ success: true, instances: newInstances });
+	return json({ success: true, instances: toClientInstances(newInstances) });
 };

@@ -16,6 +16,17 @@ export type PiHoleInstance = {
 	status: PiHoleInstanceStatus;
 };
 
+export type ClientPiHoleInstance = Omit<PiHoleInstance, 'sid' | 'csrf' | 'apiKey'>;
+
+export function toClientInstance(instance: PiHoleInstance): ClientPiHoleInstance {
+	const { sid: _, csrf: __, apiKey: ___, ...clientInstance } = instance;
+	return clientInstance;
+}
+
+export function toClientInstances(instances: PiHoleInstance[]): ClientPiHoleInstance[] {
+	return instances.map(toClientInstance);
+}
+
 export class PiHoleInstances {
 	instances: PiHoleInstance[] = [];
 
