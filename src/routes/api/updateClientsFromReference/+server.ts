@@ -69,7 +69,6 @@ async function updateClientsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating clients for instance');
 	try {
-		let updateSuccess = true;
 		const status = instance.status;
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
@@ -80,9 +79,10 @@ async function updateClientsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const client of clientsFromReference) {
-			updateSuccess = updateSuccess && (await updateClientForInstance(instance, client));
-		}
+		const results = await Promise.all(
+			clientsFromReference.map((client) => updateClientForInstance(instance, client))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,

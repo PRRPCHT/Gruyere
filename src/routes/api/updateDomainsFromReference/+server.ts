@@ -69,7 +69,6 @@ async function updateDomainsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating domains for instance');
 	try {
-		let updateSuccess = true;
 		const status = instance.status;
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
@@ -80,9 +79,10 @@ async function updateDomainsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const domain of domainsFromReference) {
-			updateSuccess = updateSuccess && (await updateDomainForInstance(instance, domain));
-		}
+		const results = await Promise.all(
+			domainsFromReference.map((domain) => updateDomainForInstance(instance, domain))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,

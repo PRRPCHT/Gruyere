@@ -69,7 +69,6 @@ async function updateListsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating lists for instance');
 	try {
-		let updateSuccess = true;
 		const status = instance.status;
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
@@ -80,9 +79,10 @@ async function updateListsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const list of listsFromReference) {
-			updateSuccess = updateSuccess && (await updateListForInstance(instance, list));
-		}
+		const results = await Promise.all(
+			listsFromReference.map((list) => updateListForInstance(instance, list))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,

@@ -70,7 +70,6 @@ async function updateGroupsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating groups for instance');
 	try {
-		let updateSuccess = true;
 		const status = instance.status;
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
@@ -81,9 +80,10 @@ async function updateGroupsForInstance(
 			};
 			return actionStatus;
 		}
-		for (const group of groupsFromReference) {
-			updateSuccess = updateSuccess && (await updateGroupForInstance(instance, group));
-		}
+		const results = await Promise.all(
+			groupsFromReference.map((group) => updateGroupForInstance(instance, group))
+		);
+		const updateSuccess = results.every(Boolean);
 		const actionStatus: ActionStatus = {
 			success: updateSuccess,
 			instance: instance.name,
