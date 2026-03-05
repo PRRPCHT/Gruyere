@@ -2,6 +2,7 @@ import { authenticate } from '$lib/clients/pihole_client';
 import type { PiHoleInstance } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
 import { configDir } from './config';
+import logger from '$lib/utils/logger';
 
 const fs = await import('fs/promises');
 const path = await import('path');
@@ -34,7 +35,7 @@ export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 		const fileContent = await fs.readFile(filePath, 'utf-8');
 		return JSON.parse(fileContent);
 	} catch (error) {
-		console.error('Error reading instances.json:', error);
+		logger.error({ error }, 'Error reading instances.json');
 		return [];
 	}
 }
@@ -45,7 +46,7 @@ export async function savePiHoleInstances(instances: PiHoleInstance[]): Promise<
 		await atomicWriteFile(filePath, JSON.stringify(instances, null, 2));
 		return true;
 	} catch (error) {
-		console.error('Error saving instances.json:', error);
+		logger.error({ error }, 'Error saving instances.json');
 		return false;
 	}
 }
@@ -131,7 +132,7 @@ export async function updatePiHoleInstanceCredentials(instance: PiHoleInstance) 
 			);
 			await savePiHoleInstances(newInstances);
 		} catch (error) {
-			console.error('Error updating instance credentials:', error);
+			logger.error({ error }, 'Error updating instance credentials');
 		}
 	});
 }
