@@ -1,6 +1,7 @@
 import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 import { atomicWriteFile } from '$lib/utils/fs';
+import { configDir } from './config';
 
 const fs = await import('fs/promises');
 const path = await import('path');
@@ -8,8 +9,6 @@ const path = await import('path');
 const scryptAsync = promisify(scrypt);
 const SALT_LENGTH = 16;
 const KEY_LENGTH = 64;
-
-const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
 const passwordFilePath = () => path.join(configDir, 'password.json');
 
 export async function hashPassword(password: string): Promise<string> {

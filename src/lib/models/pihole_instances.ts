@@ -1,12 +1,10 @@
 import { authenticate } from '$lib/clients/pihole_client';
 import type { PiHoleInstance } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
+import { configDir } from './config';
 
 const fs = await import('fs/promises');
 const path = await import('path');
-
-// Determine config directory - use /app/config in Docker, ./config in development
-const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
 
 // Promise-chain mutex to serialize read-modify-write operations on instances.json.
 // Prevents concurrent writes from overwriting each other's changes.

@@ -1,11 +1,9 @@
 import type { Settings } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
+import { configDir } from './config';
 
 const fs = await import('fs/promises');
 const path = await import('path');
-
-// Determine config directory - use /app/config in Docker, ./config in development
-const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
 
 export async function getSettings(): Promise<Settings> {
 	try {
