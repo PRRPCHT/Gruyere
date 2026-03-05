@@ -30,7 +30,6 @@ export const POST: RequestHandler = async () => {
 		const groupsFromReference = await getGroupsFromReference(reference);
 		if (groupsFromReference !== null) {
 			const statuses: ActionStatus[] = [];
-			const instances = await getPiHoleInstances();
 			const promises = instances.map(async (instance) => {
 				if (!instance.isReference) {
 					const actionStatus = await updateGroupsForInstance(instance, groupsFromReference);
