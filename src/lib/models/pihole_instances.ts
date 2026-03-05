@@ -2,6 +2,7 @@ import { authenticate } from '$lib/clients/pihole_client';
 import type { PiHoleInstance } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
 import { configDir } from './config';
+import { PiHoleInstancesSchema } from '$lib/types/schemas';
 import logger from '$lib/utils/logger';
 
 const fs = await import('fs/promises');
@@ -33,7 +34,7 @@ export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 	try {
 		const filePath = path.join(configDir, 'instances.json');
 		const fileContent = await fs.readFile(filePath, 'utf-8');
-		return JSON.parse(fileContent);
+		return PiHoleInstancesSchema.parse(JSON.parse(fileContent));
 	} catch (error) {
 		logger.error({ error }, 'Error reading instances.json');
 		return [];

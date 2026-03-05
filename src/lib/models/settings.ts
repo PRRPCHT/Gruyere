@@ -1,6 +1,7 @@
 import type { Settings } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
 import { configDir } from './config';
+import { SettingsSchema } from '$lib/types/schemas';
 import logger from '$lib/utils/logger';
 
 const fs = await import('fs/promises');
@@ -10,7 +11,7 @@ export async function getSettings(): Promise<Settings> {
 	try {
 		const filePath = path.join(configDir, 'config.json');
 		const fileContent = await fs.readFile(filePath, 'utf-8');
-		return JSON.parse(fileContent) as Settings;
+		return SettingsSchema.parse(JSON.parse(fileContent));
 	} catch (error) {
 		logger.error({ error }, 'Error reading config.json');
 		// Return default settings if file doesn't exist

@@ -2,6 +2,7 @@ import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
 import { promisify } from 'util';
 import { atomicWriteFile } from '$lib/utils/fs';
 import { configDir } from './config';
+import { PasswordFileSchema } from '$lib/types/schemas';
 
 const fs = await import('fs/promises');
 const path = await import('path');
@@ -27,8 +28,8 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 export async function isPasswordSet(): Promise<boolean> {
 	try {
 		const content = await fs.readFile(passwordFilePath(), 'utf-8');
-		const data = JSON.parse(content);
-		return typeof data.hash === 'string' && data.hash.length > 0;
+		const result = PasswordFileSchema.safeParse(JSON.parse(content));
+		return result.success;
 	} catch {
 		return false;
 	}
@@ -37,8 +38,8 @@ export async function isPasswordSet(): Promise<boolean> {
 export async function getPasswordHash(): Promise<string | null> {
 	try {
 		const content = await fs.readFile(passwordFilePath(), 'utf-8');
-		const data = JSON.parse(content);
-		return typeof data.hash === 'string' ? data.hash : null;
+		const result = PasswordFileSchema.safeParse(JSON.parse(content));
+		return result.success ? result.data.hash : null;
 	} catch {
 		return null;
 	}
