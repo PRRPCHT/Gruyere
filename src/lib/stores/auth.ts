@@ -5,14 +5,12 @@ import { resolve } from '$app/paths';
 // Auth state
 export interface AuthState {
 	isAuthenticated: boolean;
-	sessionExpires: number | null;
 }
 
 // Create auth store
 const createAuthStore = () => {
-	const { subscribe, set, update } = writable<AuthState>({
-		isAuthenticated: false,
-		sessionExpires: null
+	const { subscribe, set } = writable<AuthState>({
+		isAuthenticated: false
 	});
 
 	return {
@@ -25,20 +23,12 @@ const createAuthStore = () => {
 			} catch (error) {
 				console.error('Logout error:', error);
 			} finally {
-				set({
-					isAuthenticated: false,
-					sessionExpires: null
-				});
+				set({ isAuthenticated: false });
 				goto(resolve('/auth'));
 			}
 		},
-		initialize: (serverAuthState: boolean) => {
-			update((state) => ({
-				...state,
-				isAuthenticated: serverAuthState,
-				sessionExpires: serverAuthState ? Date.now() + 7 * 24 * 60 * 60 * 1000 : null
-			}));
-			return serverAuthState;
+		initialize: (isAuthenticated: boolean) => {
+			set({ isAuthenticated });
 		}
 	};
 };
