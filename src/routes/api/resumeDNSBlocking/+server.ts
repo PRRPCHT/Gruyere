@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			message: 'Failed to resume DNS blocking',
 			instanceStatus: PiHoleInstanceStatus.UNREACHABLE
 		};
-		return json({ success: false, status: actionStatus });
+		return json({ success: false, status: actionStatus }, { status: 400 });
 	}
 
 	const instances = await getPiHoleInstances();
