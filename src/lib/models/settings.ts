@@ -1,19 +1,19 @@
 import type { Settings } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
+import { configDir } from './config';
+import { SettingsSchema } from '$lib/types/schemas';
+import logger from '$lib/utils/logger';
 
 const fs = await import('fs/promises');
 const path = await import('path');
-
-// Determine config directory - use /app/config in Docker, ./config in development
-const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
 
 export async function getSettings(): Promise<Settings> {
 	try {
 		const filePath = path.join(configDir, 'config.json');
 		const fileContent = await fs.readFile(filePath, 'utf-8');
-		return JSON.parse(fileContent) as Settings;
+		return SettingsSchema.parse(JSON.parse(fileContent));
 	} catch (error) {
-		console.error('Error reading config.json:', error);
+		logger.error({ error }, 'Error reading config.json');
 		// Return default settings if file doesn't exist
 		return {
 			isRefreshInstance: true,
@@ -24,7 +24,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export async function saveSettings(newSettings: Settings): Promise<boolean> {
-	console.log('Saving settings:', newSettings);
+	logger.info({ settings: newSettings }, 'Saving settings');
 	try {
 		await atomicWriteFile(
 			path.join(configDir, 'config.json'),
@@ -32,7 +32,7 @@ export async function saveSettings(newSettings: Settings): Promise<boolean> {
 		);
 		return true;
 	} catch (error) {
-		console.error('Error saving config.json:', error);
+		logger.error({ error }, 'Error saving config.json');
 		return false;
 	}
 }

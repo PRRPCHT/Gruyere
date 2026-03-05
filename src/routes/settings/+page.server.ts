@@ -3,6 +3,7 @@ import { getSettings, saveSettings } from '$lib/models/settings';
 import type { SynchronizationMode } from '$lib/types/types';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import logger from '$lib/utils/logger';
 
 export const load: PageServerLoad = async () => {
 	const settings = await getSettings();
@@ -15,11 +16,11 @@ export const actions: Actions = {
 	changeSettings: async ({ request }) => {
 		try {
 			const theForm = changeSettingsExtractAndValidate(await request.formData());
-			console.log('theForm', theForm);
+			logger.debug({ theForm }, 'Settings form data');
 			if (theForm.isError) {
 				return fail(400, theForm);
 			}
-			console.log('Saving settings');
+			logger.info('Saving settings');
 			const settings = await getSettings();
 			settings.isRefreshInstance = theForm.isRefreshInstance as boolean;
 			settings.instanceRefreshInterval = theForm.instanceRefreshInterval as number;
@@ -27,7 +28,7 @@ export const actions: Actions = {
 			await saveSettings(settings);
 			return { success: true, settingsSaved: true, settings: settings };
 		} catch (error) {
-			console.error('Error saving settings:', error);
+			logger.error({ error }, 'Error saving settings');
 			return fail(500, { error: 'Error saving settings' });
 		}
 	},
@@ -41,7 +42,7 @@ export const actions: Actions = {
 			await savePassword(password);
 			return { success: true, passwordSaved: true };
 		} catch (error) {
-			console.error('Error saving password:', error);
+			logger.error({ error }, 'Error saving password');
 			return fail(500, { error: 'Error saving password' });
 		}
 	}

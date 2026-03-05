@@ -1,12 +1,12 @@
 import { authenticate } from '$lib/clients/pihole_client';
 import type { PiHoleInstance } from '$lib/types/types';
 import { atomicWriteFile } from '$lib/utils/fs';
+import { configDir } from './config';
+import { PiHoleInstancesSchema } from '$lib/types/schemas';
+import logger from '$lib/utils/logger';
 
 const fs = await import('fs/promises');
 const path = await import('path');
-
-// Determine config directory - use /app/config in Docker, ./config in development
-const configDir = process.env.NODE_ENV === 'production' ? '/app/config' : './config';
 
 // Promise-chain mutex to serialize read-modify-write operations on instances.json.
 // Prevents concurrent writes from overwriting each other's changes.
@@ -34,9 +34,9 @@ export async function getPiHoleInstances(): Promise<PiHoleInstance[]> {
 	try {
 		const filePath = path.join(configDir, 'instances.json');
 		const fileContent = await fs.readFile(filePath, 'utf-8');
-		return JSON.parse(fileContent);
+		return PiHoleInstancesSchema.parse(JSON.parse(fileContent));
 	} catch (error) {
-		console.error('Error reading instances.json:', error);
+		logger.error({ error }, 'Error reading instances.json');
 		return [];
 	}
 }
@@ -47,7 +47,7 @@ export async function savePiHoleInstances(instances: PiHoleInstance[]): Promise<
 		await atomicWriteFile(filePath, JSON.stringify(instances, null, 2));
 		return true;
 	} catch (error) {
-		console.error('Error saving instances.json:', error);
+		logger.error({ error }, 'Error saving instances.json');
 		return false;
 	}
 }
@@ -133,7 +133,7 @@ export async function updatePiHoleInstanceCredentials(instance: PiHoleInstance) 
 			);
 			await savePiHoleInstances(newInstances);
 		} catch (error) {
-			console.error('Error updating instance credentials:', error);
+			logger.error({ error }, 'Error updating instance credentials');
 		}
 	});
 }
