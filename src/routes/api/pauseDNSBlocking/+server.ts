@@ -8,15 +8,20 @@ import { getPiHoleInstances } from '$lib/models/pihole_instances';
 export const POST: RequestHandler = async ({ request }) => {
 	logger.info('Pause DNS blocking request received');
 
-	const {
-		duration: rawDuration,
-		timeScale,
-		instanceId
-	}: {
-		duration: number;
-		timeScale: PauseDurationTimeScale;
-		instanceId: number;
-	} = await request.json();
+	let rawDuration: number;
+	let timeScale: PauseDurationTimeScale;
+	let instanceId: number;
+	try {
+		({ duration: rawDuration, timeScale, instanceId } = await request.json());
+	} catch {
+		const actionStatus: ActionStatus = {
+			success: false,
+			instance: 'Unknown instance',
+			message: 'Invalid request body',
+			instanceStatus: PiHoleInstanceStatus.UNREACHABLE
+		};
+		return json({ success: false, status: actionStatus }, { status: 400 });
+	}
 
 	if (!rawDuration || rawDuration <= 0 || !timeScale || !instanceId) {
 		logger.warn(
