@@ -34,19 +34,14 @@ export function getNextId(instances: PiHoleInstance[]): number {
 }
 
 export async function deletePiHoleInstance(id: number): Promise<PiHoleInstance[]> {
-	try {
-		const instances = await getPiHoleInstances();
-		const toDelete = instances.find((instance) => instance.id === id);
-		const newInstances = instances.filter((instance) => instance.id !== id);
-		if (toDelete?.isReference && newInstances.length >= 1) {
-			newInstances[0].isReference = true;
-		}
-		await savePiHoleInstances(newInstances);
-		return newInstances;
-	} catch (error) {
-		console.error('Error deleting instance:', error);
-		return [];
+	const instances = await getPiHoleInstances();
+	const toDelete = instances.find((instance) => instance.id === id);
+	const newInstances = instances.filter((instance) => instance.id !== id);
+	if (toDelete?.isReference && newInstances.length >= 1) {
+		newInstances[0].isReference = true;
 	}
+	await savePiHoleInstances(newInstances);
+	return newInstances;
 }
 
 export async function editPiHoleInstance(
@@ -56,56 +51,48 @@ export async function editPiHoleInstance(
 	apiKey: string,
 	isReference: boolean
 ): Promise<PiHoleInstance[]> {
-	try {
-		const instances = await getPiHoleInstances();
-		const preInstance = instances.find((instance) => instance.id === id);
-		if (!preInstance) {
-			throw new Error('Instance not found');
-		}
-		let newInstances: PiHoleInstance[] = instances.map((instance) =>
-			instance.id === id ? { ...instance, name, url, apiKey, isReference } : instance
+	const instances = await getPiHoleInstances();
+	const preInstance = instances.find((instance) => instance.id === id);
+	if (!preInstance) {
+		throw new Error('Instance not found');
+	}
+	let newInstances: PiHoleInstance[] = instances.map((instance) =>
+		instance.id === id ? { ...instance, name, url, apiKey, isReference } : instance
+	);
+	if (preInstance.url !== url || preInstance.apiKey !== apiKey) {
+		preInstance.url = url;
+		preInstance.apiKey = apiKey;
+		await authenticate(preInstance);
+		newInstances = newInstances.map((instance) =>
+			instance.id === id ? { ...instance, status: preInstance.status } : instance
 		);
-		if (preInstance.url !== url || preInstance.apiKey !== apiKey) {
-			preInstance.url = url;
-			preInstance.apiKey = apiKey;
-			await authenticate(preInstance);
+	}
+	if (preInstance.isReference !== isReference) {
+		preInstance.isReference = isReference;
+		if (isReference) {
 			newInstances = newInstances.map((instance) =>
-				instance.id === id ? { ...instance, status: preInstance.status } : instance
+				instance.id === id
+					? { ...instance, isReference: true }
+					: { ...instance, isReference: false }
 			);
-		}
-		if (preInstance.isReference !== isReference) {
-			preInstance.isReference = isReference;
-			if (isReference) {
-				newInstances = newInstances.map((instance) =>
-					instance.id === id
-						? { ...instance, isReference: true }
-						: { ...instance, isReference: false }
-				);
-			} else {
-				newInstances = newInstances.map((instance) =>
-					instance.id === id
-						? { ...instance, isReference: false }
-						: { ...instance, isReference: false }
-				);
-				if (newInstances.length >= 1 && newInstances[0].id != id) {
-					newInstances[0].isReference = true;
-				} else {
-					newInstances[1].isReference = true;
-				}
+		} else {
+			newInstances = newInstances.map((instance) =>
+				instance.id === id ? { ...instance, isReference: false } : instance
+			);
+			const nextReference = newInstances.find((instance) => instance.id !== id);
+			if (nextReference) {
+				nextReference.isReference = true;
 			}
 		}
-		await savePiHoleInstances(newInstances);
-		return newInstances;
-	} catch (error) {
-		console.error('Error editing instance:', error);
-		return [];
 	}
+	await savePiHoleInstances(newInstances);
+	return newInstances;
 }
 
 export async function updatePiHoleInstanceCredentials(instance: PiHoleInstance) {
 	try {
 		const instances = await getPiHoleInstances();
-		if (!instances.find((instance) => instance.id === instance.id)) {
+		if (!instances.find((i) => i.id === instance.id)) {
 			throw new Error('Instance not found');
 		}
 		const newInstances = instances.map((toEdit) =>

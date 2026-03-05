@@ -12,7 +12,7 @@
 	import SuccessToast from '$lib/components/Toast.svelte';
 	let { data, form }: PageProps = $props();
 	let password = $state('');
-	let instanceRefreshInterval = $derived(
+	let instanceRefreshInterval = $state(
 		form?.instanceRefreshInterval
 			? form.instanceRefreshInterval
 			: data.settings.instanceRefreshInterval
@@ -21,9 +21,10 @@
 		form?.isRefreshInstance ? (form.isRefreshInstance as boolean) : data.settings.isRefreshInstance
 	);
 	let toasts: Toast[] = $state([]);
+	let nextToastId = 0;
 
 	function addToast(success: boolean) {
-		let id = toasts.length + 1;
+		const id = ++nextToastId;
 		const message = success ? 'Settings saved successfully' : 'Settings saved failed';
 		let status: ActionStatus = {
 			success,

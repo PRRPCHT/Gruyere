@@ -21,6 +21,7 @@
 	let isRefreshing = $state(false);
 
 	function showEditModal() {
+		form = {};
 		showEditInstancePanel = true;
 	}
 
@@ -129,7 +130,10 @@
 						result,
 						update
 					}: {
-						result: ActionResult<{ success: boolean; instances: PiHoleInstance[] }, undefined>;
+						result: ActionResult<
+							{ success: boolean; instances: PiHoleInstance[] },
+							Record<string, unknown>
+						>;
 						update: () => Promise<void>;
 					}) => {
 						await update();
@@ -146,6 +150,8 @@
 								editIsReference = updatedInstance.isReference;
 							}
 							showEditInstancePanel = false;
+						} else if (result.type === 'failure') {
+							form = result.data ?? {};
 						}
 					};
 				}}

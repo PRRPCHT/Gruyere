@@ -54,48 +54,53 @@
 	async function pauseDNSBlockingCustomDuration() {
 		pauseDNSBlockingError = false;
 		let newInstances = piHoleInstances;
-		newInstances.forEach(async (instance) => {
-			const result = await fetch('/api/pauseDNSBlocking', {
-				method: 'POST',
-				body: JSON.stringify({
-					duration: pauseDNSBlockingDuration,
-					timeScale: pauseDNSBlockingTimeScale,
-					instanceId: instance.id
-				})
-			});
-			const data = await result.json();
-			if (data.status) {
-				addToast(data.status);
-				showPauseDNSBlockingPanel = false;
-				pauseDNSBlockingDuration = 1;
-				pauseDNSBlockingTimeScale = PauseDurationTimeScale.MINUTES;
-			} else {
-				pauseDNSBlockingError = true;
-			}
-		});
+		await Promise.all(
+			newInstances.map(async (instance) => {
+				const result = await fetch('/api/pauseDNSBlocking', {
+					method: 'POST',
+					body: JSON.stringify({
+						duration: pauseDNSBlockingDuration,
+						timeScale: pauseDNSBlockingTimeScale,
+						instanceId: instance.id
+					})
+				});
+				const data = await result.json();
+				if (data.status) {
+					addToast(data.status);
+					showPauseDNSBlockingPanel = false;
+					pauseDNSBlockingDuration = 1;
+					pauseDNSBlockingTimeScale = PauseDurationTimeScale.MINUTES;
+				} else {
+					pauseDNSBlockingError = true;
+				}
+			})
+		);
 		await refreshInstances(newInstances);
 	}
 
 	async function pauseDNSBlocking(duration: number, timeScale: PauseDurationTimeScale) {
 		let newInstances = piHoleInstances;
-		newInstances.forEach(async (instance) => {
-			const result = await fetch('/api/pauseDNSBlocking', {
-				method: 'POST',
-				body: JSON.stringify({ duration, timeScale, instanceId: instance.id })
-			});
-			const data = await result.json();
-			if (data.status) {
-				addToast(data.status);
-				instance.status = data.status.instanceStatus;
-			}
-		});
+		await Promise.all(
+			newInstances.map(async (instance) => {
+				const result = await fetch('/api/pauseDNSBlocking', {
+					method: 'POST',
+					body: JSON.stringify({ duration, timeScale, instanceId: instance.id })
+				});
+				const data = await result.json();
+				if (data.status) {
+					addToast(data.status);
+					instance.status = data.status.instanceStatus;
+				}
+			})
+		);
 		await refreshInstances(newInstances);
 	}
 
 	let toasts: Toast[] = $state([]);
+	let nextToastId = 0;
 
 	function addToast(status: ActionStatus) {
-		let id = toasts.length + 1;
+		const id = ++nextToastId;
 		toasts.push({ id, status });
 		setTimeout(() => {
 			toasts = toasts.filter((toast) => toast.id !== id);
@@ -104,32 +109,36 @@
 
 	async function updateGravities() {
 		let newInstances = piHoleInstances;
-		newInstances.forEach(async (instance) => {
-			const result = await fetch('/api/updateGravities', {
-				method: 'POST',
-				body: JSON.stringify({ instanceId: instance.id })
-			});
-			const data = await result.json();
-			if (data.status) {
-				addToast(data.status);
-			}
-		});
+		await Promise.all(
+			newInstances.map(async (instance) => {
+				const result = await fetch('/api/updateGravities', {
+					method: 'POST',
+					body: JSON.stringify({ instanceId: instance.id })
+				});
+				const data = await result.json();
+				if (data.status) {
+					addToast(data.status);
+				}
+			})
+		);
 		await refreshInstances(newInstances);
 	}
 
 	async function restartDNS() {
 		let newInstances = piHoleInstances;
-		newInstances.forEach(async (instance) => {
-			const result = await fetch('/api/restartDNS', {
-				method: 'POST',
-				body: JSON.stringify({ instanceId: instance.id })
-			});
-			const data = await result.json();
-			if (data.status) {
-				addToast(data.status);
-				instance.status = data.status.instanceStatus;
-			}
-		});
+		await Promise.all(
+			newInstances.map(async (instance) => {
+				const result = await fetch('/api/restartDNS', {
+					method: 'POST',
+					body: JSON.stringify({ instanceId: instance.id })
+				});
+				const data = await result.json();
+				if (data.status) {
+					addToast(data.status);
+					instance.status = data.status.instanceStatus;
+				}
+			})
+		);
 		await refreshInstances(newInstances);
 	}
 
