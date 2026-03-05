@@ -6,7 +6,11 @@ import {
 	type Group,
 	type PiHoleInstance
 } from '$lib/types/types';
-import { getGroupsFromReference, updateGroupForInstance } from '$lib/clients/pihole_client';
+import {
+	checkAuthentication,
+	getGroupsFromReference,
+	updateGroupForInstance
+} from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import logger from '$lib/utils/logger';
 export const POST: RequestHandler = async () => {
@@ -70,7 +74,7 @@ async function updateGroupsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating groups for instance');
 	try {
-		const status = instance.status;
+		const status = await checkAuthentication(instance);
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
 				success: false,

@@ -6,7 +6,11 @@ import {
 	type List,
 	type PiHoleInstance
 } from '$lib/types/types';
-import { getListsFromReference, updateListForInstance } from '$lib/clients/pihole_client';
+import {
+	checkAuthentication,
+	getListsFromReference,
+	updateListForInstance
+} from '$lib/clients/pihole_client';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
 import logger from '$lib/utils/logger';
 export const POST: RequestHandler = async () => {
@@ -69,7 +73,7 @@ async function updateListsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating lists for instance');
 	try {
-		const status = instance.status;
+		const status = await checkAuthentication(instance);
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
 				success: false,

@@ -198,7 +198,6 @@ export async function updateGroupForInstance(
 	group: Group
 ): Promise<boolean> {
 	try {
-		await checkAuthentication(instance);
 		const response = await fetch(`${instance.url}/api/groups/${group.name}`, {
 			method: 'PUT',
 			headers: {
@@ -254,7 +253,6 @@ export async function updateListForInstance(
 ): Promise<boolean> {
 	console.log('Updating list for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
 		const response = await fetch(`${instance.url}/api/lists/${list.address}`, {
 			method: 'PUT',
 			headers: {
@@ -314,7 +312,6 @@ export async function updateDomainForInstance(
 ): Promise<boolean> {
 	console.log('Updating domain for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
 		const response = await fetch(
 			`${instance.url}/api/domains/${domain.type}/${domain.kind}/${domain.domain}`,
 			{
@@ -379,7 +376,6 @@ export async function updateClientForInstance(
 ): Promise<boolean> {
 	console.log('Updating client for Pi-hole', instance.name);
 	try {
-		await checkAuthentication(instance);
 		const response = await fetch(`${instance.url}/api/clients/${client.client}`, {
 			method: 'PUT',
 			headers: {

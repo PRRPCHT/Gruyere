@@ -1,7 +1,11 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { getPiHoleInstances } from '$lib/models/pihole_instances';
-import { getDomainsFromReference, updateDomainForInstance } from '$lib/clients/pihole_client';
+import {
+	checkAuthentication,
+	getDomainsFromReference,
+	updateDomainForInstance
+} from '$lib/clients/pihole_client';
 import {
 	PiHoleInstanceStatus,
 	type ActionStatus,
@@ -69,7 +73,7 @@ async function updateDomainsForInstance(
 ): Promise<ActionStatus> {
 	logger.debug({ instance: instance.name }, 'Updating domains for instance');
 	try {
-		const status = instance.status;
+		const status = await checkAuthentication(instance);
 		if (status !== PiHoleInstanceStatus.ACTIVE) {
 			const actionStatus: ActionStatus = {
 				success: false,
