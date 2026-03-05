@@ -223,12 +223,10 @@
 		<InstanceItem instance={piHoleInstance} {piHoleInstances} />
 	{/each}
 	<div class="flex flex-row justify-end">
-		<!-- <div class="tooltip tooltip-left" data-tip="Add a new Pi-hole instance"> -->
 		<button
 			class="btn w-48 rounded-none border-none bg-slate-700 hover:bg-slate-600"
 			onclick={() => (showAddInstancePanel = !showAddInstancePanel)}>Add new instance</button
 		>
-		<!-- </div> -->
 	</div>
 
 	{#if showAddInstancePanel}
