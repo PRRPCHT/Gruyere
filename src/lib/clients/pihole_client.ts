@@ -41,7 +41,7 @@ export async function checkAuthentication(instance: PiHoleInstance): Promise<PiH
 // @param instance - The instance to authenticate with
 // @returns true if the authentication is successful, false otherwise
 export async function authenticate(instance: PiHoleInstance): Promise<PiHoleInstanceStatus> {
-	console.log('Authenticating with Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Authenticating with Pi-hole');
 	try {
 		const response = await piholeFetch(`${instance.url}/api/auth`, {
 			method: 'POST',
@@ -78,7 +78,7 @@ export async function pauseDNSBlocking(
 	instance: PiHoleInstance,
 	duration: number
 ): Promise<boolean> {
-	console.log('Pausing DNS blocking for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Pausing DNS blocking for Pi-hole');
 	try {
 		const instanceStatus = await checkAuthentication(instance);
 		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
@@ -108,7 +108,7 @@ export async function pauseDNSBlocking(
 // @param instance - The instance to resume DNS blocking for
 // @returns true if the DNS blocking is resumed successfully, false otherwise
 export async function resumeDNSBlocking(instance: PiHoleInstance): Promise<boolean> {
-	console.log('Activating DNS blocking for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Resuming DNS blocking for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/dns/blocking`, {
@@ -130,7 +130,7 @@ export async function resumeDNSBlocking(instance: PiHoleInstance): Promise<boole
 // @param instance - The instance to update gravity for
 // @returns true if the gravity is updated successfully, false otherwise
 export async function updateGravity(instance: PiHoleInstance): Promise<boolean> {
-	console.log('Updating gravity for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Updating gravity for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/action/gravity`, {
@@ -151,7 +151,7 @@ export async function updateGravity(instance: PiHoleInstance): Promise<boolean> 
 // @param instance - The instance to restart DNS for
 // @returns true if the DNS is restarted successfully, false otherwise
 export async function restartDNS(instance: PiHoleInstance): Promise<boolean> {
-	console.log('Restarting DNS for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Restarting DNS for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/action/restartdns`, {
@@ -173,7 +173,7 @@ export async function restartDNS(instance: PiHoleInstance): Promise<boolean> {
 // @param instance - The reference instance to get the groups from
 // @returns the groups from the reference
 export async function getGroupsFromReference(instance: PiHoleInstance): Promise<Group[] | null> {
-	console.log('Getting groups from reference for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Getting groups from reference for Pi-hole');
 	try {
 		const instanceStatus = await checkAuthentication(instance);
 		if (instanceStatus !== PiHoleInstanceStatus.ACTIVE) {
@@ -218,7 +218,7 @@ export async function updateGroupForInstance(
 			throw new Error('Failed updating group for Pi-hole instance.');
 		}
 		const data = await response.json();
-		console.log('The data is:', data);
+		logger.debug({ data }, 'Group update response');
 		return data.processed.errors.length === 0; //TODO: Change this to check if the group is updated partially
 	} catch (error) {
 		checkError(error, instance, 'Error updating group');
@@ -230,7 +230,7 @@ export async function updateGroupForInstance(
 // @param instance - The reference instance to get the lists from
 // @returns the lists from the reference
 export async function getListsFromReference(instance: PiHoleInstance): Promise<List[] | null> {
-	console.log('Getting lists from reference for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Getting lists from reference for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/lists`, {
@@ -259,7 +259,7 @@ export async function updateListForInstance(
 	instance: PiHoleInstance,
 	list: List
 ): Promise<boolean> {
-	console.log('Updating list for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Updating list for Pi-hole');
 	try {
 		const response = await piholeFetch(`${instance.url}/api/lists/${list.address}`, {
 			method: 'PUT',
@@ -289,7 +289,7 @@ export async function updateListForInstance(
 // @param instance - The reference instance to get the domains from
 // @returns the domains from the reference
 export async function getDomainsFromReference(instance: PiHoleInstance): Promise<Domain[] | null> {
-	console.log('Getting domains from reference for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Getting domains from reference for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/domains`, {
@@ -318,7 +318,7 @@ export async function updateDomainForInstance(
 	instance: PiHoleInstance,
 	domain: Domain
 ): Promise<boolean> {
-	console.log('Updating domain for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Updating domain for Pi-hole');
 	try {
 		const response = await fetch(
 			`${instance.url}/api/domains/${domain.type}/${domain.kind}/${domain.domain}`,
@@ -337,7 +337,7 @@ export async function updateDomainForInstance(
 				})
 			}
 		);
-		console.log('The response is:', response);
+		logger.debug({ status: response.status }, 'Domain update response');
 		if (response.status !== 200) {
 			throw new Error('Failed updating domain for Pi-hole instance.');
 		}
@@ -353,7 +353,7 @@ export async function updateDomainForInstance(
 // @param instance - The reference instance to get the clients from
 // @returns the clients from the reference
 export async function getClientsFromReference(instance: PiHoleInstance): Promise<Client[] | null> {
-	console.log('Getting clients from reference for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Getting clients from reference for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/clients`, {
@@ -382,7 +382,7 @@ export async function updateClientForInstance(
 	instance: PiHoleInstance,
 	client: Client
 ): Promise<boolean> {
-	console.log('Updating client for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Updating client for Pi-hole');
 	try {
 		const response = await piholeFetch(`${instance.url}/api/clients/${client.client}`, {
 			method: 'PUT',
@@ -407,7 +407,7 @@ export async function updateClientForInstance(
 }
 
 export async function getStats(instance: PiHoleInstance): Promise<Stats> {
-	console.log('Getting stats for Pi-hole', instance.name);
+	logger.info({ instance: instance.name }, 'Getting stats for Pi-hole');
 	try {
 		await checkAuthentication(instance);
 		const response = await piholeFetch(`${instance.url}/api/stats/summary`, {
@@ -454,8 +454,8 @@ function checkError(error: unknown, instance: PiHoleInstance, message: string) {
 		err.message?.includes('EHOSTDOWN') ||
 		err.message?.includes('ECONNREFUSED')
 	) {
-		console.error(instance.name, '- Connection timeout or host unreachable');
+		logger.warn({ instance: instance.name }, 'Connection timeout or host unreachable');
 	} else {
-		console.error(instance.name, '-', message, error);
+		logger.error({ error, instance: instance.name }, message);
 	}
 }
