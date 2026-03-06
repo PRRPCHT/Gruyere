@@ -22,14 +22,13 @@ export const GET: RequestHandler = async ({ url }) => {
 		return json({ success: false, error: 'Instance not found' }, { status: 404 });
 	}
 
+	// Snapshot before mutation so the before/after comparison is meaningful
+	const instancesString = JSON.stringify(instances);
 	const status = await checkAuthentication(instance);
 	instance.status = status;
 	const newInstances = instances.map((instance) =>
 		instance.id === parseInt(instanceId) ? { ...instance, status } : instance
 	);
-
-	// Only save if instances and newInstances are not identical
-	const instancesString = JSON.stringify(instances);
 	const newInstancesString = JSON.stringify(newInstances);
 	if (instancesString !== newInstancesString) {
 		logger.info('Instance status changed, saving updates');
