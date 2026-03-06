@@ -19,8 +19,9 @@ describe('PiHoleInstanceSchema', () => {
 	});
 
 	it('rejects missing name', () => {
-		const { name: _, ...rest } = validInstance;
-		expect(PiHoleInstanceSchema.safeParse(rest).success).toBe(false);
+		const without = { ...validInstance } as Partial<typeof validInstance>;
+		delete without.name;
+		expect(PiHoleInstanceSchema.safeParse(without).success).toBe(false);
 	});
 
 	it('rejects empty name', () => {
@@ -28,8 +29,9 @@ describe('PiHoleInstanceSchema', () => {
 	});
 
 	it('rejects missing url', () => {
-		const { url: _, ...rest } = validInstance;
-		expect(PiHoleInstanceSchema.safeParse(rest).success).toBe(false);
+		const without = { ...validInstance } as Partial<typeof validInstance>;
+		delete without.url;
+		expect(PiHoleInstanceSchema.safeParse(without).success).toBe(false);
 	});
 
 	it('rejects invalid URL format', () => {
@@ -39,8 +41,9 @@ describe('PiHoleInstanceSchema', () => {
 	});
 
 	it('rejects missing id', () => {
-		const { id: _, ...rest } = validInstance;
-		expect(PiHoleInstanceSchema.safeParse(rest).success).toBe(false);
+		const without = { ...validInstance } as Partial<typeof validInstance>;
+		delete without.id;
+		expect(PiHoleInstanceSchema.safeParse(without).success).toBe(false);
 	});
 
 	it('rejects non-integer id', () => {
