@@ -13,7 +13,7 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"test": "vitest run",
-		"test:integration": "vitest run --include 'src/**/*.integration.ts'"
+		"test:integration": "vitest run --config vitest.integration.config.ts"
 	},
 	"devDependencies": {
 		"@eslint/compat": "2.0.2",
