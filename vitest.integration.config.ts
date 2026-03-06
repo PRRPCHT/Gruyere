@@ -9,7 +9,11 @@ export default defineConfig({
 	},
 	test: {
 		environment: 'node',
-		include: ['src/hooks.server.spec.ts', 'src/routes/**/*.spec.ts'],
+		include: [
+			'src/hooks.server.spec.ts',
+			'src/lib/clients/**/*.integration.ts',
+			'src/routes/**/*.spec.ts'
+		],
 		exclude: ['src/routes/page.svelte.spec.ts']
 	}
 });

@@ -10,6 +10,8 @@ export const GET: RequestHandler = async () => {
 	const instances = await getPiHoleInstances();
 	logger.debug(`Found ${instances.length} instances to check`);
 
+	// Snapshot before mutations so the before/after comparison is meaningful
+	const instancesString = JSON.stringify(instances);
 	const newInstances = [...instances];
 	await Promise.all(
 		newInstances.map(async (instance) => {
@@ -18,9 +20,6 @@ export const GET: RequestHandler = async () => {
 			logger.debug(`Instance ${instance.name} status: ${status}`);
 		})
 	);
-
-	// Only save if instances and newInstances are not identical
-	const instancesString = JSON.stringify(instances);
 	const newInstancesString = JSON.stringify(newInstances);
 	if (instancesString !== newInstancesString) {
 		logger.info('Instance statuses changed, saving updates');
