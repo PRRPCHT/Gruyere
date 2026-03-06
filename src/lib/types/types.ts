@@ -19,7 +19,8 @@ export type PiHoleInstance = {
 export type ClientPiHoleInstance = Omit<PiHoleInstance, 'sid' | 'csrf' | 'apiKey'>;
 
 export function toClientInstance(instance: PiHoleInstance): ClientPiHoleInstance {
-	const { sid: _, csrf: __, apiKey: ___, ...clientInstance } = instance;
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { sid, csrf, apiKey, ...clientInstance } = instance;
 	return clientInstance;
 }
 

@@ -90,12 +90,14 @@
 		<div class="flex flex-row items-center gap-4 py-2">
 			<div class="ps-2 text-lg font-bold">{instance.name}</div>
 			<div class="text-sm">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a
 					href={instance.url + '/admin'}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="link no-underline hover:text-secondary">{instance.url}</a
 				>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</div>
 		</div>
 		<div class="flex flex-row items-center gap-2">
