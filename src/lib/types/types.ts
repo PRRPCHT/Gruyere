@@ -19,8 +19,8 @@ export type PiHoleInstance = {
 export type ClientPiHoleInstance = Omit<PiHoleInstance, 'sid' | 'csrf' | 'apiKey'>;
 
 export function toClientInstance(instance: PiHoleInstance): ClientPiHoleInstance {
-	const { sid: _, csrf: __, apiKey: ___, ...clientInstance } = instance;
-	return clientInstance;
+	const { id, name, url, isReference, status } = instance;
+	return { id, name, url, isReference, status };
 }
 
 export function toClientInstances(instances: PiHoleInstance[]): ClientPiHoleInstance[] {

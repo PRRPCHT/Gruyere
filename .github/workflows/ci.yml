@@ -42,9 +42,8 @@ jobs:
           cp svelte.config.prod.js svelte.config.js
           npm run build
 
-      # TODO: Uncomment when Vitest is installed
-      # - name: Test
-      #   run: npm test
+      - name: Test
+        run: npm test
 
       - name: Telegram notification - Success
         if: success()
