@@ -17,6 +17,9 @@ function piholeFetch(url: string, init?: RequestInit): Promise<Response> {
 // @param instance - The instance to check authentication for
 // @returns true if the authentication is valid, false otherwise
 export async function checkAuthentication(instance: PiHoleInstance): Promise<PiHoleInstanceStatus> {
+	if (!instance.sid) {
+		return authenticate(instance);
+	}
 	try {
 		const response = await piholeFetch(`${instance.url}/api/auth`, {
 			method: 'GET',

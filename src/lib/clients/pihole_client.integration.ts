@@ -47,8 +47,10 @@ describe('authenticate', () => {
 
 describe('checkAuthentication', () => {
 	it('returns ACTIVE for the alive instance (.99)', async () => {
-		// Empty sid triggers re-authentication internally
-		const result = await checkAuthentication(aliveInstance());
+		// Authenticate first to obtain a valid sid, then verify the session is recognised
+		const instance = aliveInstance();
+		await authenticate(instance);
+		const result = await checkAuthentication(instance);
 		expect(result).toBe(PiHoleInstanceStatus.ACTIVE);
 	}, 10_000);
 
